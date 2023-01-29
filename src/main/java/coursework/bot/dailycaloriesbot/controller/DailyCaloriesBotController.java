@@ -1,6 +1,6 @@
 package coursework.bot.dailycaloriesbot.controller;
 
-import coursework.bot.dailycaloriesbot.DailyCaloriesBot;
+import coursework.bot.dailycaloriesbot.model.DailyCaloriesBot;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;

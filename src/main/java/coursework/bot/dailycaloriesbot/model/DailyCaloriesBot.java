@@ -1,4 +1,4 @@
-package coursework.bot.dailycaloriesbot;
+package coursework.bot.dailycaloriesbot.model;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -18,10 +18,12 @@ public class DailyCaloriesBot extends SpringWebhookBot {
     String botUsername;
     String botToken;
     private TelegramFacade telegramFacade;
+
     public DailyCaloriesBot(TelegramFacade telegramFacade, DefaultBotOptions options, SetWebhook setWebhook) {
         super(options, setWebhook);
         this.telegramFacade = telegramFacade;
     }
+
     public DailyCaloriesBot(TelegramFacade telegramFacade, SetWebhook setWebhook) {
         super(setWebhook);
         this.telegramFacade = telegramFacade;

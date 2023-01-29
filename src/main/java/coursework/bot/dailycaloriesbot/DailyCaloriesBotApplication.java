@@ -9,5 +9,4 @@ public class DailyCaloriesBotApplication {
     public static void main(String[] args) {
         SpringApplication.run(DailyCaloriesBotApplication.class, args);
     }
-
 }

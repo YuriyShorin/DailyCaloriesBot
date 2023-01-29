@@ -1,7 +1,7 @@
 package coursework.bot.dailycaloriesbot.config;
 
-import coursework.bot.dailycaloriesbot.DailyCaloriesBot;
-import coursework.bot.dailycaloriesbot.TelegramFacade;
+import coursework.bot.dailycaloriesbot.model.DailyCaloriesBot;
+import coursework.bot.dailycaloriesbot.model.TelegramFacade;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
