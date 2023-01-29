@@ -1,4 +1,4 @@
-package coursework.bot.dailycaloriesbot.model;
+package coursework.bot.dailycaloriesbot.view;
 
 import lombok.AccessLevel;
 import lombok.Getter;
