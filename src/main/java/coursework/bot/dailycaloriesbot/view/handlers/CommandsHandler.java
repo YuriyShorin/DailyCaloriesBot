@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -21,16 +20,16 @@ public class CommandsHandler {
     }
 
     public SendMessage unknownCommandReceived(Update update) { // обработчик неизвестной команды
-        return new SendMessage(update.getMessage().getChatId().toString(), "Получена неизвестная команда");
+        if (update.getMessage().getText().startsWith("/")) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Получена неизвестная команда");
+        }
+        return null;
     }
 
     public SendMessage registrationCommandReceived(Update update) {
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel();
-        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(),"Какой у вас пол?");
-        List<String> list = new ArrayList<>();
-        list.add("Мужчина");
-        list.add("Женщина");
-        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(list));
+        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Какой у вас пол?");
+        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Мужчина", "Женщина"}), "GENDER_")); // добавление двух кнопок
         return sendMessage;
     }
 }

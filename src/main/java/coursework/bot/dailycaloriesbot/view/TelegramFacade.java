@@ -20,7 +20,7 @@ public class TelegramFacade {
             CallbackQuery callbackQuery = update.getCallbackQuery();
             return callbackQueryHandler.processCallBackQuery(callbackQuery);
         }
-        if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().getText().startsWith("/")) { // если получено команда (начинается с /)
+        if (update.hasMessage() && update.getMessage().hasText()) { // если получено команда (начинается с /)
             return processCommand(update);
         }
         return null;
@@ -33,8 +33,8 @@ public class TelegramFacade {
             case "/start" -> {
                 return commandsHandler.startCommandReceived(update); // если получена команда /start
             }
-            case "/reg" -> {
-                return commandsHandler.registrationCommandReceived(update); // если получена команда /reg
+            case "Зарегестрироваться" -> {
+                return commandsHandler.registrationCommandReceived(update); // если получена команда Зарегестрироваться
             }
             default -> {
                 return commandsHandler.unknownCommandReceived(update); // получена неизвестная команда

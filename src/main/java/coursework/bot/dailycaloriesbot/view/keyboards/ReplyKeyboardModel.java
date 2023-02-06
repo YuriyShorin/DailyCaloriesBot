@@ -10,9 +10,9 @@ import java.util.List;
 
 @Component
 public class ReplyKeyboardModel {
-    public ReplyKeyboardMarkup getStartMenuKeyboard(){ // устанавливвает кнопку /reg
+    public ReplyKeyboardMarkup getStartMenuKeyboard(){ // устанавливает кнопку Зарегестрироваться
         KeyboardRow row = new KeyboardRow();
-        row.add(new KeyboardButton("/reg"));
+        row.add(new KeyboardButton("Зарегестрироваться"));
         List<KeyboardRow> keyboard = new ArrayList<>();
         keyboard.add(row);
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
@@ -22,6 +22,4 @@ public class ReplyKeyboardModel {
         replyKeyboardMarkup.setOneTimeKeyboard(true);
         return replyKeyboardMarkup;
     }
-
-
 }

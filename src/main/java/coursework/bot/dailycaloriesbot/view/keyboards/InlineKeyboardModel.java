@@ -8,21 +8,20 @@ import java.util.List;
 
 public class InlineKeyboardModel {
 
-    public InlineKeyboardMarkup createInlineKeyboardMarkup(List<String> data) { // метод для создания inline кнопок
+    public InlineKeyboardMarkup createInlineKeyboardMarkup(List<String> buttonNames, String callBackData) { // метод для создания inline кнопок
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboardRow = new ArrayList<>();
-        for (String d :data) {
-            keyboardRow.add(getButton(d,"GENDER_" + d));
+        for (String name : buttonNames) {
+            keyboardRow.add(createButton(name, callBackData + name));
         }
         inlineKeyboardMarkup.setKeyboard(keyboardRow);
         return inlineKeyboardMarkup;
     }
 
-    private List<InlineKeyboardButton> getButton(String buttonName, String buttonCallBackData) {
+    private List<InlineKeyboardButton> createButton(String buttonName, String buttonCallBackData) {
         InlineKeyboardButton button = new InlineKeyboardButton();
         button.setText(buttonName);
         button.setCallbackData(buttonCallBackData);
-
         List<InlineKeyboardButton> keyboardButtonsRow = new ArrayList<>();
         keyboardButtonsRow.add(button);
         return keyboardButtonsRow;
