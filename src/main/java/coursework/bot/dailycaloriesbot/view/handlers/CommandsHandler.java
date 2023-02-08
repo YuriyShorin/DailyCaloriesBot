@@ -1,21 +1,30 @@
 package coursework.bot.dailycaloriesbot.view.handlers;
 
+import coursework.bot.dailycaloriesbot.controller.UsersController;
+import coursework.bot.dailycaloriesbot.entity.Users;
 import coursework.bot.dailycaloriesbot.view.keyboards.InlineKeyboardModel;
-import coursework.bot.dailycaloriesbot.view.keyboards.ReplyKeyboardModel;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
 import java.util.List;
+
 
 @Component
 public class CommandsHandler {
 
-
-    public SendMessage startCommandReceived(Update update) { // обработчик команды /start
-        ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
-        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Привет, " + update.getMessage().getFrom().getUserName());
-        sendMessage.setReplyMarkup(replyKeyboardModel.getStartMenuKeyboard());
+    public SendMessage startCommandReceived(Update update, UsersController usersController) { // обработчик команды /start
+        Users user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
+        SendMessage sendMessage;
+        if (user == null) {
+            InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel();
+            sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Желаете ли зарегистрироваться?");
+            sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да", "Нет"}), "REGISTRATION")); // добавление двух кнопок
+            usersController.createUser(new Users(update.getMessage().getFrom().getId(), "no"));
+        } else if (user.getWasRegistered().equals("yes")) {
+            sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "С возвращением!");
+        } else {
+            sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Регистрация будет продолжена!");
+        }
         return sendMessage;
     }
 
@@ -24,12 +33,5 @@ public class CommandsHandler {
             return new SendMessage(update.getMessage().getChatId().toString(), "Получена неизвестная команда");
         }
         return null;
-    }
-
-    public SendMessage registrationCommandReceived(Update update) {
-        InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel();
-        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Какой у вас пол?");
-        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Мужчина", "Женщина"}), "GENDER_")); // добавление двух кнопок
-        return sendMessage;
     }
 }
