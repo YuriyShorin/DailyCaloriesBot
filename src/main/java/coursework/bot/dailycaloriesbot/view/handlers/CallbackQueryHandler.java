@@ -20,7 +20,9 @@ public class CallbackQueryHandler {
     }
 
     private SendMessage getGender(CallbackQuery buttonQuery, String answer, UsersController usersController) {
-        usersController.updateWasRegistered(usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getId(), "age");
+        long userId = usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getId();
+        usersController.updateWasRegistered(userId, "age");
+        usersController.updateGender(userId, answer);
         return new SendMessage(buttonQuery.getMessage().getChatId().toString(), "Сколько вам лет?");
     }
 

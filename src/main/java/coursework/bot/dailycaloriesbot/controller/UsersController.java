@@ -29,6 +29,51 @@ public class UsersController {
         }
     }
 
+    public void updateGender(long id, String gender) {
+        Optional<Users> usersData = usersRepository.findById(id);
+        if (usersData.isPresent()) {
+            Users user = usersData.get();
+            user.setGender(gender);
+            usersRepository.save(user);
+        }
+    }
+
+    public void updateAge(long id, int age) {
+        Optional<Users> usersData = usersRepository.findById(id);
+        if (usersData.isPresent()) {
+            Users user = usersData.get();
+            user.setAge(age);
+            usersRepository.save(user);
+        }
+    }
+
+    public void updateWeight(long id, double weight) {
+        Optional<Users> usersData = usersRepository.findById(id);
+        if (usersData.isPresent()) {
+            Users user = usersData.get();
+            user.setWeight(weight);
+            usersRepository.save(user);
+        }
+    }
+
+    public void updateHeight(long id, double height) {
+        Optional<Users> usersData = usersRepository.findById(id);
+        if (usersData.isPresent()) {
+            Users user = usersData.get();
+            user.setHeight(height);
+            usersRepository.save(user);
+        }
+    }
+
+    public void updateGoal(long id, int goal) {
+        Optional<Users> usersData = usersRepository.findById(id);
+        if (usersData.isPresent()) {
+            Users user = usersData.get();
+            user.setGoal(goal);
+            usersRepository.save(user);
+        }
+    }
+
     public void deleteUser(long telegramId) {
         usersRepository.deleteById(usersRepository.findByTelegramId(telegramId).getId());
     }
