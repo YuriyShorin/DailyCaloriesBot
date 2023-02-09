@@ -18,7 +18,7 @@ public class CommandsHandler {
         if (user == null) {
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel();
             sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Желаете ли зарегистрироваться?");
-            sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да", "Нет"}), "REGISTRATION")); // добавление двух кнопок
+            sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да ✅", "Нет ❌"}), "REGISTRATION")); // добавление двух кнопок
             usersController.createUser(new Users(update.getMessage().getFrom().getId(), "no"));
         } else if (user.getWasRegistered().equals("yes")) {
             sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "С возвращением!");

@@ -32,7 +32,7 @@ public class CallbackQueryHandler {
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel();
             usersController.updateWasRegistered(usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getId(), "gender");
             sendMessage = new SendMessage(buttonQuery.getMessage().getChatId().toString(), "Какого вы пола?");
-            sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Мужчина", "Женщина"}), "GENDER_"));
+            sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Мужчина \uD83D\uDC71\u200D♂️", "Женщина \uD83D\uDC71\u200D♀️"}), "GENDER_"));
         } else {
             usersController.updateWasRegistered(usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getId(), "no registration");
             sendMessage = new SendMessage(buttonQuery.getMessage().getChatId().toString(), "ок");
