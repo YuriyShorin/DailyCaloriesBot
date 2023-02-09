@@ -65,7 +65,7 @@ public class UsersController {
         }
     }
 
-    public void updateGoal(long id, int goal) {
+    public void updateGoal(long id, String goal) {
         Optional<Users> usersData = usersRepository.findById(id);
         if (usersData.isPresent()) {
             Users user = usersData.get();

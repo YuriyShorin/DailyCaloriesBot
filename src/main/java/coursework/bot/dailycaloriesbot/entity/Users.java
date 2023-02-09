@@ -22,7 +22,7 @@ public class Users {
     @Column(name = "height")
     private double height;
     @Column(name = "goal")
-    private int goal;
+    private String goal;
 
     protected Users() {
     }
@@ -91,11 +91,11 @@ public class Users {
         this.height = height;
     }
 
-    public int getGoal() {
+    public String getGoal() {
         return goal;
     }
 
-    public void setGoal(int goal) {
+    public void setGoal(String goal) {
         this.goal = goal;
     }
 }

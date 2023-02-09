@@ -8,8 +8,13 @@ import java.util.List;
 
 public class InlineKeyboardModel {
 
+    private InlineKeyboardMarkup inlineKeyboardMarkup;
+
+    public InlineKeyboardModel(InlineKeyboardMarkup inlineKeyboardMarkup) {
+        this.inlineKeyboardMarkup = inlineKeyboardMarkup;
+    }
+
     public InlineKeyboardMarkup createInlineKeyboardMarkup(List<String> buttonNames, String callBackData) { // метод для создания inline кнопок
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboardRow = new ArrayList<>();
         for (String name : buttonNames) {
             keyboardRow.add(createButton(name, callBackData + name));

@@ -6,6 +6,8 @@ import coursework.bot.dailycaloriesbot.view.keyboards.InlineKeyboardModel;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+
 import java.util.List;
 
 
@@ -16,7 +18,7 @@ public class CommandsHandler {
         Users user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
         SendMessage sendMessage;
         if (user == null) {
-            InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel();
+            InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
             sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Желаете ли зарегистрироваться?");
             sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да ✅", "Нет ❌"}), "REGISTRATION")); // добавление двух кнопок
             usersController.createUser(new Users(update.getMessage().getFrom().getId(), "no"));
@@ -67,21 +69,10 @@ public class CommandsHandler {
         long userId = usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getId();
         usersController.updateHeight(userId, height);
         usersController.updateWasRegistered(userId, "goal");
-        return new SendMessage(update.getMessage().getChatId().toString(), "Сколько килокалорий вы хотите потреблять за день?");
-    }
-
-    public SendMessage goalCommandReceived(Update update, UsersController usersController) {
-        String messageText = update.getMessage().getText();
-        int goal;
-        try {
-            goal = Integer.parseInt(messageText);
-        } catch (NumberFormatException e) {
-            return new SendMessage(update.getMessage().getChatId().toString(), "Цель должна быть целым числом");
-        }
-        long userId = usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getId();
-        usersController.updateGoal(userId, goal);
-        usersController.updateWasRegistered(userId, "yes");
-        return new SendMessage(update.getMessage().getChatId().toString(), "Процесс регистрации завершен!");
+        InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
+        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Какова ваша цель похудения?");
+        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Похудение", "Поддержание веса", "Набор массы"}), "GOAL"));
+        return sendMessage;
     }
 
     public SendMessage unknownCommandReceived(Update update) { // обработчик неизвестной команды
