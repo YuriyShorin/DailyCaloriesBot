@@ -38,6 +38,12 @@ public class TelegramFacade {
                         processCommand(update, "weight", usersController); // процесс регистрации на стадии веса
                 case "height" ->
                         processCommand(update, "height", usersController); // процесс регистрации на стадии роста
+                case "change_age" ->
+                    processCommand(update, "change_age", usersController);
+                case "change_height" ->
+                    processCommand(update, "change_height", usersController);
+                case "change_weight" ->
+                    processCommand(update, "change_weight", usersController);
                 default -> processCommand(update, "wrong", usersController);
             };
         }
@@ -52,6 +58,9 @@ public class TelegramFacade {
             case "age" -> commandsHandler.ageCommandReceived(update, usersController);
             case "weight" -> commandsHandler.weightCommandReceived(update, usersController);
             case "height" -> commandsHandler.heightCommandReceived(update, usersController);
+            case "change_age" -> commandsHandler.changeAgeCommandReceived(update, usersController);
+            case "change_height" -> commandsHandler.changeHeightCommandReceived(update, usersController);
+            case "change_weight" -> commandsHandler.changeWeightCommandReceived(update, usersController);
             default -> commandsHandler.unknownCommandReceived(update); // получена неизвестная команда
         };
     }

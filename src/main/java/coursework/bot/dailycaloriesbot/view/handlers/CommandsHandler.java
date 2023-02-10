@@ -4,6 +4,7 @@ import coursework.bot.dailycaloriesbot.controller.UsersController;
 import coursework.bot.dailycaloriesbot.entity.Users;
 import coursework.bot.dailycaloriesbot.view.keyboards.InlineKeyboardModel;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -80,5 +81,80 @@ public class CommandsHandler {
             return new SendMessage(update.getMessage().getChatId().toString(), "Получена неизвестная команда");
         }
         return null;
+    }
+
+    public BotApiMethod<?> changeAgeCommandReceived(Update update, UsersController usersController) {
+        String messageText = update.getMessage().getText();
+        int age;
+        try {
+            age = Integer.parseInt(messageText);
+        } catch (NumberFormatException e) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Возраст должен быть целым числом");
+        }
+        long userId = usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getId();
+        usersController.updateAge(userId, age);
+        usersController.updateWasRegistered(userId, "yes");
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setText("Ваши данные изменены." +
+                "\n\nВаш пол: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getGender() +
+                "\nВаш возраст: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getAge() +
+                "\nВаш вес: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getWeight() +
+                "\nВаш рост: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getHeight() +
+                "\nВаша цель: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getGoal() +
+                "\n\nВсе верно?");
+        sendMessage.setChatId(update.getMessage().getChatId());
+        InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
+        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да ✅", "Изменить ⚙️"}), "IS_REGISTRATION_CORRECT"));
+        return sendMessage;
+    }
+
+    public BotApiMethod<?> changeHeightCommandReceived(Update update, UsersController usersController) {
+        String messageText = update.getMessage().getText();
+        double height;
+        try {
+            height = Double.parseDouble(messageText);
+        } catch (NumberFormatException e) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Вес должен быть целым или дробным числом");
+        }
+        long userId = usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getId();
+        usersController.updateHeight(userId, height);
+        usersController.updateWasRegistered(userId, "yes");
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setText("Ваши данные изменены." +
+                "\n\nВаш пол: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getGender() +
+                "\nВаш возраст: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getAge() +
+                "\nВаш вес: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getWeight() +
+                "\nВаш рост: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getHeight() +
+                "\nВаша цель: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getGoal() +
+                "\n\nВсе верно?");
+        sendMessage.setChatId(update.getMessage().getChatId());
+        InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
+        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да ✅", "Изменить ⚙️"}), "IS_REGISTRATION_CORRECT"));
+        return sendMessage;
+    }
+
+    public BotApiMethod<?> changeWeightCommandReceived(Update update, UsersController usersController) {
+        String messageText = update.getMessage().getText();
+        double weight;
+        try {
+            weight = Double.parseDouble(messageText);
+        } catch (NumberFormatException e) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Вес должен быть целым или дробным числом");
+        }
+        long userId = usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getId();
+        usersController.updateWeight(userId, weight);
+        usersController.updateWasRegistered(userId, "yes");
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setText("Ваши данные изменены." +
+                "\n\nВаш пол: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getGender() +
+                "\nВаш возраст: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getAge() +
+                "\nВаш вес: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getWeight() +
+                "\nВаш рост: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getHeight() +
+                "\nВаша цель: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getGoal() +
+                "\n\nВсе верно?");
+        sendMessage.setChatId(update.getMessage().getChatId());
+        InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
+        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да ✅", "Изменить ⚙️"}), "IS_REGISTRATION_CORRECT"));
+        return sendMessage;
     }
 }
