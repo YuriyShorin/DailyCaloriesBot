@@ -1,6 +1,7 @@
 package coursework.bot.dailycaloriesbot.view.handlers;
 
 import coursework.bot.dailycaloriesbot.controller.UsersController;
+import coursework.bot.dailycaloriesbot.entity.Users;
 import coursework.bot.dailycaloriesbot.view.keyboards.InlineKeyboardModel;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -14,7 +15,7 @@ public class CallbackQueryHandler {
     public BotApiMethod<?> processCallBackQuery(CallbackQuery buttonQuery, UsersController usersController) {
         String data = buttonQuery.getData();
         if (data.startsWith("GENDER")) {
-            return getGender(buttonQuery, data.substring(7, 14), usersController);
+            return getGenderAnswer(buttonQuery, data.substring(6, 13), usersController);
         } else if (data.startsWith("REGISTRATION")) {
             return getRegistrationAnswer(buttonQuery, data.substring(12), usersController);
         } else if (data.startsWith("GOAL")) {
@@ -26,46 +27,64 @@ public class CallbackQueryHandler {
         } else if (data.startsWith("change_GENDER")) {
             return changeGender(buttonQuery, data.substring(13, 20), usersController);
         } else if (data.startsWith("change_GOAL")) {
-            return changeGOAL(buttonQuery, data.substring(11), usersController);
+            return changeGoal(buttonQuery, data.substring(11), usersController);
+        } else if (data.startsWith("WAS_REGISTRATION_CONTINUED")) {
+            return continueRegistration(buttonQuery, data.substring(26), usersController);
+        } else {
+            return null;
         }
-        return null;
     }
 
-    private BotApiMethod<?> changeGOAL(CallbackQuery buttonQuery, String answer, UsersController usersController) {
-        long userId = usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getId();
-        usersController.updateGoal(userId, answer);
-        usersController.updateWasRegistered(userId, "yes");
+    private BotApiMethod<?> checkIsRegistrationCorrect(CallbackQuery buttonQuery, String answer) {
         EditMessageText editMessageText = new EditMessageText();
-        editMessageText.setChatId(buttonQuery.getMessage().getChatId().toString());
+        editMessageText.setChatId(buttonQuery.getMessage().getChatId());
         editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
-        editMessageText.setText("Ваши данные изменены." +
-                "\n\nВаш пол: " + usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getGender() +
-                "\nВаш возраст: " + usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getAge() +
-                "\nВаш вес: " + usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getWeight() +
-                "\nВаш рост: " + usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getHeight() +
-                "\nВаша цель: " + usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getGoal() +
-                "\n\n Все верно?");
-        InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-        editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да ✅", "Изменить ⚙️"}), "IS_REGISTRATION_CORRECT"));
+        if (answer.equals("Да ✅")) {
+            editMessageText.setReplyMarkup(new InlineKeyboardMarkup());
+            editMessageText.setText("Ваши данные сохранены");
+        } else {
+            editMessageText.setText("Что вы хотите изменить?");
+            InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
+            editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Пол", "Возраст", "Вес", "Рост", "Цель", "Пройти регистрацию заново"}), "CHANGE"));
+        }
         return editMessageText;
     }
 
-    private BotApiMethod<?> changeGender(CallbackQuery buttonQuery, String answer, UsersController usersController) {
+    private BotApiMethod<?> getGoalAnswer(CallbackQuery buttonQuery, String answer, UsersController usersController) {
         long userId = usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getId();
-        usersController.updateGender(userId, answer);
         usersController.updateWasRegistered(userId, "yes");
+        usersController.updateGoal(userId, answer);
+        return createFinalRegistrationMessage(buttonQuery, usersController);
+    }
+
+    private BotApiMethod<?> getGenderAnswer(CallbackQuery buttonQuery, String answer, UsersController usersController) {
+        long userId = usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getId();
+        usersController.updateWasRegistered(userId, "age");
+        usersController.updateGender(userId, answer);
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(buttonQuery.getMessage().getChatId().toString());
         editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
-        editMessageText.setText("Ваши данные изменены." +
-                "\n\nВаш пол: " + usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getGender() +
-                "\nВаш возраст: " + usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getAge() +
-                "\nВаш вес: " + usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getWeight() +
-                "\nВаш рост: " + usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getHeight() +
-                "\nВаша цель: " + usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getGoal() +
-                "\n\n Все верно?");
-        InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-        editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да ✅", "Изменить ⚙️"}), "IS_REGISTRATION_CORRECT"));
+        editMessageText.setReplyMarkup(new InlineKeyboardMarkup());
+        editMessageText.setText("Сколько вам лет?");
+        return editMessageText;
+    }
+
+    private BotApiMethod<?> getRegistrationAnswer(CallbackQuery buttonQuery, String answer, UsersController usersController) {
+        EditMessageText editMessageText = new EditMessageText();
+        editMessageText.setChatId(buttonQuery.getMessage().getChatId().toString());
+        editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
+        if (answer.equals("Да ✅")) {
+            InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
+            usersController.updateWasRegistered(usersController.getUserByTelegramId(buttonQuery.getFrom().getId())
+                    .getId(), "gender");
+            editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Мужчина \uD83D\uDC71\u200D♂️", "Женщина \uD83D\uDC71\u200D♀️"}), "GENDER"));
+            editMessageText.setText("Какого вы пола?");
+        } else {
+            usersController.updateWasRegistered(usersController.getUserByTelegramId(buttonQuery.getFrom().getId())
+                    .getId(), "no registration");
+            editMessageText.setReplyMarkup(new InlineKeyboardMarkup());
+            editMessageText.setText("ок");
+        }
         return editMessageText;
     }
 
@@ -91,6 +110,12 @@ public class CallbackQueryHandler {
             usersController.updateWasRegistered(userId, "change_weight");
             editMessageText.setText("Какой у вас вес (кг)?");
             editMessageText.setReplyMarkup(new InlineKeyboardMarkup());
+        } else if (data.endsWith("Пройти регистрацию заново")) {
+            InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
+            usersController.deleteUser(buttonQuery.getFrom().getId());
+            usersController.createUser(new Users(buttonQuery.getFrom().getId(), "gender"));
+            editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Мужчина \uD83D\uDC71\u200D♂️", "Женщина \uD83D\uDC71\u200D♀️"}), "GENDER"));
+            editMessageText.setText("Какого вы пола?");
         } else {
             usersController.updateWasRegistered(userId, "change_goal");
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
@@ -100,31 +125,64 @@ public class CallbackQueryHandler {
         return editMessageText;
     }
 
-    private BotApiMethod<?> checkIsRegistrationCorrect(CallbackQuery buttonQuery, String answer) {
+    private BotApiMethod<?> changeGoal(CallbackQuery buttonQuery, String answer, UsersController usersController) {
+        long userId = usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getId();
+        usersController.updateGoal(userId, answer);
+        usersController.updateWasRegistered(userId, "yes");
+        return createFinalRegistrationMessage(buttonQuery, usersController);
+    }
+
+    private BotApiMethod<?> changeGender(CallbackQuery buttonQuery, String answer, UsersController usersController) {
+        long userId = usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getId();
+        usersController.updateGender(userId, answer);
+        usersController.updateWasRegistered(userId, "yes");
+        return createFinalRegistrationMessage(buttonQuery, usersController);
+    }
+
+    private BotApiMethod<?> continueRegistration(CallbackQuery buttonQuery, String answer, UsersController usersController) {
         EditMessageText editMessageText = new EditMessageText();
+        InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
+        editMessageText.setChatId(buttonQuery.getMessage().getChatId().toString());
+        editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
+        long userId = buttonQuery.getFrom().getId();
+        String stageOfRegistration = usersController.getUserByTelegramId(userId).getWasRegistered();
         if (answer.equals("Да ✅")) {
-            editMessageText.setReplyMarkup(new InlineKeyboardMarkup());
-            editMessageText.setChatId(buttonQuery.getMessage().getChatId());
-            editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
-            editMessageText.setText("Ваши данные сохранены");
+            switch (stageOfRegistration) {
+                case "gender" -> {
+                    editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Мужчина \uD83D\uDC71\u200D♂️", "Женщина \uD83D\uDC71\u200D♀️"}), "GENDER"));
+                    editMessageText.setText("Какого вы пола?");
+                }
+                case "age" -> {
+                    editMessageText.setText("Сколько вам лет?");
+                    editMessageText.setReplyMarkup(new InlineKeyboardMarkup());
+                }
+                case "weight" -> {
+                    editMessageText.setText("Какой у вас вес?");
+                    editMessageText.setReplyMarkup(new InlineKeyboardMarkup());
+                }
+                case "height" -> {
+                    editMessageText.setText("Какой у вас рост?");
+                    editMessageText.setReplyMarkup(new InlineKeyboardMarkup());
+                }
+                default -> {
+                    editMessageText.setText("Какова ваша цель похудения?");
+                    editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Похудение", "Поддержание веса", "Набор массы"}), "GOAL"));
+                }
+            }
         } else {
-            editMessageText.setText("Что вы хотите изменить?");
-            editMessageText.setChatId(buttonQuery.getMessage().getChatId());
-            editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
-            InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-            editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Пол", "Возраст", "Вес", "Рост", "Цель"}), "CHANGE"));
+            usersController.deleteUser(userId);
+            usersController.createUser(new Users(userId, "no"));
+            editMessageText.setText("Желаете ли зарегистрироваться?");
+            editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да ✅", "Нет ❌"}), "REGISTRATION")); // добавление двух кнопок
         }
         return editMessageText;
     }
 
-    private BotApiMethod<?> getGoalAnswer(CallbackQuery buttonQuery, String answer, UsersController usersController) {
-        long userId = usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getId();
-        usersController.updateWasRegistered(userId, "yes");
-        usersController.updateGoal(userId, answer);
+    private BotApiMethod<?> createFinalRegistrationMessage(CallbackQuery buttonQuery, UsersController usersController) {
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(buttonQuery.getMessage().getChatId().toString());
         editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
-        editMessageText.setText("Процесс регистрации завершен!" +
+        editMessageText.setText("Ваши данные изменены." +
                 "\n\nВаш пол: " + usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getGender() +
                 "\nВаш возраст: " + usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getAge() +
                 "\nВаш вес: " + usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getWeight() +
@@ -135,38 +193,4 @@ public class CallbackQueryHandler {
         editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да ✅", "Изменить ⚙️"}), "IS_REGISTRATION_CORRECT"));
         return editMessageText;
     }
-
-    private BotApiMethod<?> getGender(CallbackQuery buttonQuery, String answer, UsersController usersController) {
-        long userId = usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getId();
-        usersController.updateWasRegistered(userId, "age");
-        usersController.updateGender(userId, answer);
-        EditMessageText editMessageText = new EditMessageText();
-        editMessageText.setChatId(buttonQuery.getMessage().getChatId().toString());
-        editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
-        editMessageText.setReplyMarkup(new InlineKeyboardMarkup());
-        editMessageText.setText("Сколько вам лет?");
-        return editMessageText;
-    }
-
-    private BotApiMethod<?> getRegistrationAnswer(CallbackQuery buttonQuery, String answer, UsersController usersController) {
-        EditMessageText editMessageText = new EditMessageText();
-        if (answer.equals("Да ✅")) {
-            InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-            usersController.updateWasRegistered(usersController.getUserByTelegramId(buttonQuery.getFrom().getId())
-                    .getId(), "gender");
-            editMessageText.setChatId(buttonQuery.getMessage().getChatId().toString());
-            editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
-            editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Мужчина \uD83D\uDC71\u200D♂️", "Женщина \uD83D\uDC71\u200D♀️"}), "GENDER_"));
-            editMessageText.setText("Какого вы пола?");
-        } else {
-            usersController.updateWasRegistered(usersController.getUserByTelegramId(buttonQuery.getFrom().getId())
-                    .getId(), "no registration");
-            editMessageText.setChatId(buttonQuery.getMessage().getChatId().toString());
-            editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
-            editMessageText.setReplyMarkup(new InlineKeyboardMarkup());
-            editMessageText.setText("ок");
-        }
-        return editMessageText;
-    }
-
 }
