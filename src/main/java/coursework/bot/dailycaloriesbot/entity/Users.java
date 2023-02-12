@@ -47,10 +47,6 @@ public class Users {
         return telegramId;
     }
 
-    public void setTelegramId(Long telegramId) {
-        this.telegramId = telegramId;
-    }
-
     public String getWasRegistered() {
         return wasRegistered;
     }

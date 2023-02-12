@@ -8,7 +8,7 @@ import java.util.List;
 
 public class InlineKeyboardModel {
 
-    private InlineKeyboardMarkup inlineKeyboardMarkup;
+    private final InlineKeyboardMarkup inlineKeyboardMarkup;
 
     public InlineKeyboardModel(InlineKeyboardMarkup inlineKeyboardMarkup) {
         this.inlineKeyboardMarkup = inlineKeyboardMarkup;

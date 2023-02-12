@@ -8,7 +8,6 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
@@ -20,8 +19,7 @@ public class TelegramFacade {
     public BotApiMethod<?> handleUpdate(Update update) { // получен update от Telegram
         if (update.hasCallbackQuery()) {
             CallbackQueryHandler callbackQueryHandler = new CallbackQueryHandler();
-            CallbackQuery callbackQuery = update.getCallbackQuery();
-            return callbackQueryHandler.processCallBackQuery(callbackQuery, usersController);
+            return callbackQueryHandler.processCallBackQuery(update.getCallbackQuery(), usersController);
         }
         if (update.hasMessage() && update.getMessage().hasText()) { // если получено сообщение
             String messageText = update.getMessage().getText();
@@ -38,13 +36,10 @@ public class TelegramFacade {
                         processCommand(update, "weight", usersController); // процесс регистрации на стадии веса
                 case "height" ->
                         processCommand(update, "height", usersController); // процесс регистрации на стадии роста
-                case "change_age" ->
-                    processCommand(update, "change_age", usersController);
-                case "change_height" ->
-                    processCommand(update, "change_height", usersController);
-                case "change_weight" ->
-                    processCommand(update, "change_weight", usersController);
-                default -> processCommand(update, "wrong", usersController);
+                case "change_age" -> processCommand(update, "change_age", usersController);
+                case "change_height" -> processCommand(update, "change_height", usersController);
+                case "change_weight" -> processCommand(update, "change_weight", usersController);
+                default -> null;
             };
         }
         return null;

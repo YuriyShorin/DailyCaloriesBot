@@ -14,7 +14,7 @@ import java.util.List;
 @Component
 public class CommandsHandler {
 
-    public SendMessage startCommandReceived(Update update, UsersController usersController) { // обработчик команды /start
+    public BotApiMethod<?> startCommandReceived(Update update, UsersController usersController) { // обработчик команды /start
         Users user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
         SendMessage sendMessage;
         if (user == null) {
@@ -26,10 +26,8 @@ public class CommandsHandler {
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
             sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Желаете ли зарегистрироваться?");
             sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да ✅", "Нет ❌"}), "REGISTRATION")); // добавление двух кнопок
-        } else if (user.getWasRegistered().equals("yes")) {
+        } else if (user.getWasRegistered().equals("yes") || user.getWasRegistered().equals("no registration")) {
             sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "С возвращением!");
-        } else if (user.getWasRegistered().equals("no registration")) {
-            sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Тут должен быть основной функционал");
         } else {
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
             sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Хотели бы продолжить регистрацию?");
@@ -44,6 +42,9 @@ public class CommandsHandler {
         if (age == null) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Возраст должен быть целым числом");
         }
+        if (!NumbersUtil.checkAge(age)) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный возраст: " + age);
+        }
         long userId = usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getId();
         usersController.updateAge(userId, age);
         usersController.updateWasRegistered(userId, "weight");
@@ -56,6 +57,9 @@ public class CommandsHandler {
         if (weight == null) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Вес должен быть целым или дробным числом");
         }
+        if (!NumbersUtil.checkWeight(weight)) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный вес: " + weight);
+        }
         long userId = usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getId();
         usersController.updateWeight(userId, weight);
         usersController.updateWasRegistered(userId, "height");
@@ -66,7 +70,10 @@ public class CommandsHandler {
         String messageText = update.getMessage().getText();
         Double height = NumbersUtil.parseDouble(messageText);
         if (height == null) {
-            return new SendMessage(update.getMessage().getChatId().toString(), "Вес должен быть целым или дробным числом");
+            return new SendMessage(update.getMessage().getChatId().toString(), "Рост должен быть целым или дробным числом");
+        }
+        if (!NumbersUtil.checkHeight(height)) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный рост: " + height);
         }
         long userId = usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getId();
         usersController.updateHeight(userId, height);
@@ -83,19 +90,11 @@ public class CommandsHandler {
         if (age == null) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Возраст должен быть целым числом");
         }
-        long userId = usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getId();
-        usersController.updateAge(userId, age);
-        return createFinalRegistrationMessage(update, userId, usersController);
-    }
-
-    public BotApiMethod<?> changeHeightCommandReceived(Update update, UsersController usersController) {
-        String messageText = update.getMessage().getText();
-        Double height = NumbersUtil.parseDouble(messageText);
-        if (height == null) {
-            return new SendMessage(update.getMessage().getChatId().toString(), "Вес должен быть целым или дробным числом");
+        if (!NumbersUtil.checkAge(age)) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный возраст: " + age);
         }
         long userId = usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getId();
-        usersController.updateHeight(userId, height);
+        usersController.updateAge(userId, age);
         return createFinalRegistrationMessage(update, userId, usersController);
     }
 
@@ -105,8 +104,25 @@ public class CommandsHandler {
         if (weight == null) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Вес должен быть целым или дробным числом");
         }
+        if (!NumbersUtil.checkWeight(weight)) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный вес: " + weight);
+        }
         long userId = usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getId();
         usersController.updateWeight(userId, weight);
+        return createFinalRegistrationMessage(update, userId, usersController);
+    }
+
+    public BotApiMethod<?> changeHeightCommandReceived(Update update, UsersController usersController) {
+        String messageText = update.getMessage().getText();
+        Double height = NumbersUtil.parseDouble(messageText);
+        if (height == null) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Рост должен быть целым или дробным числом");
+        }
+        if (!NumbersUtil.checkHeight(height)) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный рост: " + height);
+        }
+        long userId = usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getId();
+        usersController.updateHeight(userId, height);
         return createFinalRegistrationMessage(update, userId, usersController);
     }
 

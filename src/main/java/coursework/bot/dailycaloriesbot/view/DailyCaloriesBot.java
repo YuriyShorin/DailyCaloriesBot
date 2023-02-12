@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
-import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -18,11 +17,6 @@ public class DailyCaloriesBot extends SpringWebhookBot {
     String botUsername;
     String botToken;
     private TelegramFacade telegramFacade;
-
-    public DailyCaloriesBot(TelegramFacade telegramFacade, DefaultBotOptions options, SetWebhook setWebhook) {
-        super(options, setWebhook);
-        this.telegramFacade = telegramFacade;
-    }
 
     public DailyCaloriesBot(TelegramFacade telegramFacade, SetWebhook setWebhook) {
         super(setWebhook);
