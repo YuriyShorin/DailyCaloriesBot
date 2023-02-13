@@ -78,7 +78,8 @@ public class CallbackQueryHandler {
         editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
         if (answer.equals("Да ✅")) {
             editMessageText.setReplyMarkup(new InlineKeyboardMarkup());
-            editMessageText.setText("Ваши данные сохранены");
+            editMessageText.setText("Ваши данные сохранены." +
+                    "\nНажмите /continue для продолжения");
         } else {
             editMessageText.setText("Что вы хотите изменить?");
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());

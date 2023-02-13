@@ -21,19 +21,21 @@ public class CommandsHandler {
         Users user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
         SendMessage sendMessage;
         if (user == null) {
-            sendMessage = createRegistrationYesOrNoMessage("Желаете ли зарегистрироваться?", "REGISTRATION", update.getMessage().getChatId().toString());
+            sendMessage = createRegistrationYesOrNoMessage("Желаете ли зарегистрироваться?", "REGISTRATION", update.getMessage()
+                    .getChatId().toString());
             usersController.createUser(new Users(update.getMessage().getFrom().getId(), "no"));
         } else if (user.getWasRegistered().equals("no")) {
-            sendMessage = createRegistrationYesOrNoMessage("Желаете ли зарегистрироваться?", "REGISTRATION", update.getMessage().getChatId().toString());
+            sendMessage = createRegistrationYesOrNoMessage("Желаете ли зарегистрироваться?", "REGISTRATION", update.getMessage()
+                    .getChatId().toString());
         } else if (user.getWasRegistered().equals("yes") || user.getWasRegistered().equals("no registration")) {
             sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "С возвращением!");
             ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
             ReplyKeyboardMarkup replyKeyboardMarkup = replyKeyboardModel.getReplyKeyboardMarkup(List.of(new String[]{"\uD83C\uDF54 Добавить продукт",
                     "\uD83D\uDCA7 Добавить стакан", " \uD83D\uDCCA Статистика", "⚙️ Изменить данные", "❓Помощь", "\uD83C\uDF71 Моя норма"}), 2);
             sendMessage.setReplyMarkup(replyKeyboardMarkup);
-
         } else {
-            sendMessage = createRegistrationYesOrNoMessage("Хотели бы продолжить регистрацию?", "WAS_REGISTRATION_CONTINUED", update.getMessage().getChatId().toString());
+            sendMessage = createRegistrationYesOrNoMessage("Хотели бы продолжить регистрацию?", "WAS_REGISTRATION_CONTINUED", update.getMessage()
+                    .getChatId().toString());
         }
         return sendMessage;
     }
@@ -57,7 +59,8 @@ public class CommandsHandler {
         String messageText = update.getMessage().getText();
         Double weight = NumbersUtil.parseDouble(messageText);
         if (weight == null) {
-            return new SendMessage(update.getMessage().getChatId().toString(), "Вес должен быть целым или дробным числом");
+            return new SendMessage(update.getMessage().getChatId()
+                    .toString(), "Вес должен быть целым или дробным числом");
         }
         if (!NumbersUtil.checkWeight(weight)) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный вес: " + weight);
@@ -72,7 +75,8 @@ public class CommandsHandler {
         String messageText = update.getMessage().getText();
         Double height = NumbersUtil.parseDouble(messageText);
         if (height == null) {
-            return new SendMessage(update.getMessage().getChatId().toString(), "Рост должен быть целым или дробным числом");
+            return new SendMessage(update.getMessage().getChatId()
+                    .toString(), "Рост должен быть целым или дробным числом");
         }
         if (!NumbersUtil.checkHeight(height)) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный рост: " + height);
@@ -81,7 +85,8 @@ public class CommandsHandler {
         usersController.updateHeight(userId, height);
         usersController.updateWasRegistered(userId, "goal");
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Какова ваша цель похудения?");
+        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId()
+                .toString(), "Какова ваша цель похудения?");
         sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Похудение", "Поддержание веса", "Набор массы"}), "GOAL"));
         return sendMessage;
     }
@@ -104,7 +109,8 @@ public class CommandsHandler {
         String messageText = update.getMessage().getText();
         Double weight = NumbersUtil.parseDouble(messageText);
         if (weight == null) {
-            return new SendMessage(update.getMessage().getChatId().toString(), "Вес должен быть целым или дробным числом");
+            return new SendMessage(update.getMessage().getChatId()
+                    .toString(), "Вес должен быть целым или дробным числом");
         }
         if (!NumbersUtil.checkWeight(weight)) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный вес: " + weight);
@@ -118,7 +124,8 @@ public class CommandsHandler {
         String messageText = update.getMessage().getText();
         Double height = NumbersUtil.parseDouble(messageText);
         if (height == null) {
-            return new SendMessage(update.getMessage().getChatId().toString(), "Рост должен быть целым или дробным числом");
+            return new SendMessage(update.getMessage().getChatId()
+                    .toString(), "Рост должен быть целым или дробным числом");
         }
         if (!NumbersUtil.checkHeight(height)) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный рост: " + height);
@@ -139,10 +146,13 @@ public class CommandsHandler {
         usersController.updateWasRegistered(userId, "yes");
         SendMessage sendMessage = new SendMessage();
         sendMessage.setText("Ваши данные изменены." +
-                "\n\nВаш пол: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getGender() +
-                "\nВаш возраст: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getAge() +
+                "\n\nВаш пол: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId())
+                .getGender() +
+                "\nВаш возраст: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId())
+                .getAge() +
                 "\nВаш вес: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getWeight() +
-                "\nВаш рост: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getHeight() +
+                "\nВаш рост: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId())
+                .getHeight() +
                 "\nВаша цель: " + usersController.getUserByTelegramId(update.getMessage().getFrom().getId()).getGoal() +
                 "\n\nВсе верно?");
         sendMessage.setChatId(update.getMessage().getChatId());
@@ -155,6 +165,15 @@ public class CommandsHandler {
         SendMessage sendMessage = new SendMessage(chatId, messageText);
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
         sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да ✅", "Нет ❌"}), callbackData));
+        return sendMessage;
+    }
+
+    public BotApiMethod<?> continueCommandReceived(Update update, UsersController usersController) {
+        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Выберите что-нибудь");
+        ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
+        ReplyKeyboardMarkup replyKeyboardMarkup = replyKeyboardModel.getReplyKeyboardMarkup(List.of(new String[]{"\uD83C\uDF54 Добавить продукт",
+                "\uD83D\uDCA7 Добавить стакан", " \uD83D\uDCCA Статистика", "⚙️ Изменить данные", "❓Помощь", "\uD83C\uDF71 Моя норма"}), 2);
+        sendMessage.setReplyMarkup(replyKeyboardMarkup);
         return sendMessage;
     }
 }

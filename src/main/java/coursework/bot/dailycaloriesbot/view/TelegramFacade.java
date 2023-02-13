@@ -56,6 +56,7 @@ public class TelegramFacade {
             case "change_age" -> commandsHandler.changeAgeCommandReceived(update, usersController);
             case "change_height" -> commandsHandler.changeHeightCommandReceived(update, usersController);
             case "change_weight" -> commandsHandler.changeWeightCommandReceived(update, usersController);
+            case "/continue" -> commandsHandler.continueCommandReceived(update, usersController);
             default -> commandsHandler.unknownCommandReceived(update); // получена неизвестная команда
         };
     }
