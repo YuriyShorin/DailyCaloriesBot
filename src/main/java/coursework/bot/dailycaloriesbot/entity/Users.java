@@ -5,10 +5,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "Users")
 public class Users {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
-    private Long id;
     @Column(name = "telegram_id")
     private Long telegramId;
     @Column(name = "was_registered")
@@ -24,6 +21,12 @@ public class Users {
     @Column(name = "goal")
     private String goal;
 
+    @Column(name = "activity")
+    private String activity;
+
+    @Column(name = "glasses_of_water")
+    private int glassesOfWater;
+
     protected Users() {
     }
 
@@ -34,17 +37,24 @@ public class Users {
 
     @Override
     public String toString() {
-        return String.format(
-                "User[id=%d, telegram_id='%s', was_registered='%s']",
-                id, telegramId, wasRegistered);
-    }
-
-    public Long getId() {
-        return id;
+        return "Users{" +
+                "telegramId=" + telegramId +
+                ", wasRegistered='" + wasRegistered + '\'' +
+                ", gender='" + gender + '\'' +
+                ", age=" + age +
+                ", weight=" + weight +
+                ", height=" + height +
+                ", goal='" + goal + '\'' +
+                ", glassesOfWater=" + glassesOfWater +
+                '}';
     }
 
     public Long getTelegramId() {
         return telegramId;
+    }
+
+    public void setTelegramId(Long telegramId) {
+        this.telegramId = telegramId;
     }
 
     public String getWasRegistered() {
@@ -93,5 +103,21 @@ public class Users {
 
     public void setGoal(String goal) {
         this.goal = goal;
+    }
+
+    public String getActivity() {
+        return activity;
+    }
+
+    public void setActivity(String activity) {
+        this.activity = activity;
+    }
+
+    public int getGlassesOfWater() {
+        return glassesOfWater;
+    }
+
+    public void setGlassesOfWater(int glassesOfWater) {
+        this.glassesOfWater = glassesOfWater;
     }
 }

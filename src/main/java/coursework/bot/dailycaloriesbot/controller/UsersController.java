@@ -4,7 +4,6 @@ import coursework.bot.dailycaloriesbot.entity.Users;
 import coursework.bot.dailycaloriesbot.repositories.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.util.Optional;
 
 @RestController
@@ -13,7 +12,8 @@ public class UsersController {
     UsersRepository usersRepository;
 
     public Users getUserByTelegramId(long telegramId) {
-        return usersRepository.findByTelegramId(telegramId);
+        Optional<Users> usersData = usersRepository.findById(telegramId);
+        return usersData.orElse(null);
     }
 
     public void createUser(Users user) {
@@ -74,7 +74,25 @@ public class UsersController {
         }
     }
 
+    public void updateActivity(long id, String activity) {
+        Optional<Users> usersData = usersRepository.findById(id);
+        if (usersData.isPresent()) {
+            Users user = usersData.get();
+            user.setActivity(activity);
+            usersRepository.save(user);
+        }
+    }
+
+    public void incrementGlassesOfWater(long id) {
+        Optional<Users> usersData = usersRepository.findById(id);
+        if (usersData.isPresent()) {
+            Users user = usersData.get();
+            user.setGlassesOfWater(user.getGlassesOfWater() + 1);
+            usersRepository.save(user);
+        }
+    }
+
     public void deleteUser(long telegramId) {
-        usersRepository.deleteById(usersRepository.findByTelegramId(telegramId).getId());
+        usersRepository.deleteById(telegramId);
     }
 }

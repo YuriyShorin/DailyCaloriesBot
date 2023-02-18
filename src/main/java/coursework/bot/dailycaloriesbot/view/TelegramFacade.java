@@ -1,6 +1,7 @@
 package coursework.bot.dailycaloriesbot.view;
 
 import coursework.bot.dailycaloriesbot.controller.UsersController;
+import coursework.bot.dailycaloriesbot.entity.Users;
 import coursework.bot.dailycaloriesbot.view.handlers.CallbackQueryHandler;
 import coursework.bot.dailycaloriesbot.view.handlers.CommandsHandler;
 import lombok.AccessLevel;
@@ -26,11 +27,14 @@ public class TelegramFacade {
             if (messageText.startsWith("/")) { // получена команда
                 return processCommand(update, messageText, usersController);
             }
-            String stageOfRegistration = usersController.getUserByTelegramId(update.getMessage().getFrom().getId())
-                    .getWasRegistered();
+            Users user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
+            if (user == null) {
+                return null;
+            }
+            String stageOfRegistration = user.getWasRegistered();
             return switch (stageOfRegistration) {
                 case "yes", "no registration" ->
-                        processCommand(update, "/addProduct", usersController); // процесс регистрации завершен
+                        processCommand(update, update.getMessage().getText(), usersController); // процесс регистрации завершен
                 case "age" -> processCommand(update, "age", usersController); // процесс регистрации на стадии возраста
                 case "weight" ->
                         processCommand(update, "weight", usersController); // процесс регистрации на стадии веса
@@ -50,13 +54,19 @@ public class TelegramFacade {
         return switch (command) {
             case "/start" ->
                     commandsHandler.startCommandReceived(update, usersController); // если получена команда /start
+            case "/continue" -> commandsHandler.continueCommandReceived(update);
             case "age" -> commandsHandler.ageCommandReceived(update, usersController);
             case "weight" -> commandsHandler.weightCommandReceived(update, usersController);
             case "height" -> commandsHandler.heightCommandReceived(update, usersController);
             case "change_age" -> commandsHandler.changeAgeCommandReceived(update, usersController);
             case "change_height" -> commandsHandler.changeHeightCommandReceived(update, usersController);
             case "change_weight" -> commandsHandler.changeWeightCommandReceived(update, usersController);
-            case "/continue" -> commandsHandler.continueCommandReceived(update, usersController);
+            case "\uD83C\uDF54 Добавить продукт" -> commandsHandler.addProductCommandReceived(update, usersController);
+            case "\uD83D\uDCA7 Добавить стакан" -> commandsHandler.addGlassOfWaterCommandReceived(update, usersController);
+            case "\uD83D\uDCCA Статистика" -> commandsHandler.getStatisticsCommandReceived(update, usersController);
+            case "⚙️ Изменить данные" -> commandsHandler.changeDataCommandReceived(update, usersController);
+            case "❓Помощь" -> commandsHandler.getHelpCommandReceived(update, usersController);
+            case "\uD83C\uDF71 Моя норма" -> commandsHandler.getNormCommandReceived(update, usersController);
             default -> commandsHandler.unknownCommandReceived(update); // получена неизвестная команда
         };
     }
