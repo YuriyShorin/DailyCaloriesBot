@@ -14,7 +14,7 @@ public class Schedule {
     UsersRepository usersRepository;
 
     @Scheduled(cron = "0 0 0 * * *")
-    private void zeroOutGlassesOfWater() {
+    private void ResetDailyFieldsInDatabase() {
         Iterable<Users> usersData = usersRepository.findAll();
         while (usersData.iterator().hasNext()) {
             Users user = usersData.iterator().next();
@@ -23,3 +23,4 @@ public class Schedule {
         }
     }
 }
+

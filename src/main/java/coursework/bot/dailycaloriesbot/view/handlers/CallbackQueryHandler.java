@@ -4,6 +4,7 @@ import coursework.bot.dailycaloriesbot.controller.UsersController;
 import coursework.bot.dailycaloriesbot.entity.Users;
 import coursework.bot.dailycaloriesbot.view.keyboards.InlineKeyboardModel;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -227,14 +228,15 @@ public class CallbackQueryHandler {
         editMessageText.setChatId(buttonQuery.getMessage().getChatId().toString());
         editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
         Users user = usersController.getUserByTelegramId(buttonQuery.getFrom().getId());
+        editMessageText.setParseMode(ParseMode.HTML);
         editMessageText.setText("Ваши данные изменены." +
-                "\n\nВаш пол: " + user.getGender() +
-                "\nВаш возраст: " + user.getAge() +
-                "\nВаш вес: " + user.getWeight() +
-                "\nВаш рост: " + user.getHeight() +
-                "\nВаша цель: " + user.getGoal() +
-                "\nВаша активность: " + user.getActivity() +
-                "\n\nВсе верно?");
+                "\n\nВаш пол: <b>" + user.getGender() +
+                "</b>\nВаш возраст <b>: " + user.getAge() +
+                "</b>\nВаш вес: <b>" + user.getWeight() +
+                "</b>\nВаш рост: <b>" + user.getHeight() +
+                "</b>\nВаша цель: <b>" + user.getGoal() +
+                "</b>\nВаша активность <b>: " + user.getActivity() +
+                "</b>\n\nВсе верно?");
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
         editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да ✅", "Изменить ⚙️"}), "IS_REGISTRATION_CORRECT"));
         return editMessageText;
