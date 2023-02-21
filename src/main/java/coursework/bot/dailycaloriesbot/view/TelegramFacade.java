@@ -24,12 +24,15 @@ public class TelegramFacade {
         }
         if (update.hasMessage() && update.getMessage().hasText()) { // если получено сообщение
             String messageText = update.getMessage().getText();
-            if (messageText.startsWith("/")) { // получена команда
+            if (messageText.equals("/start")) { // получена команда начать
                 return processCommand(update, messageText, usersController);
             }
             Users user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
             if (user == null) {
                 return null;
+            }
+            if (messageText.equals("/continue")) {
+                return processCommand(update, messageText, usersController);
             }
             String stageOfRegistration = user.getWasRegistered();
             return switch (stageOfRegistration) {

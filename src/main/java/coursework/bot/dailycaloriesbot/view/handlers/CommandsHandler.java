@@ -1,5 +1,6 @@
 package coursework.bot.dailycaloriesbot.view.handlers;
 
+import coursework.bot.dailycaloriesbot.Constants.Constants;
 import coursework.bot.dailycaloriesbot.controller.UsersController;
 import coursework.bot.dailycaloriesbot.entity.Users;
 import coursework.bot.dailycaloriesbot.utills.NumbersUtil;
@@ -12,7 +13,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import java.util.List;
 
 @Component
 public class CommandsHandler {
@@ -21,35 +21,20 @@ public class CommandsHandler {
         Users user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
         SendMessage sendMessage;
         if (user == null) {
-            sendMessage = createRegistrationYesOrNoMessage("""
-                    @CalorieTrackingBot позволяет отслеживать потребленные за день калории и собирать статистику.
-                    
-                    Регистрация позволит расчитать норму дневного потребления.
-                 
-                    <b>Важно: Мы не храним персональные данные. Бот имеет доступ лишь к Telegram id.</b>
-
-                    Желаете зарегистрироваться?""", "REGISTRATION", update.getMessage()
+            sendMessage = createRegistrationYesOrNoMessage(Constants.HelloMessage, "REGISTRATION", update.getMessage()
                     .getChatId().toString());
             usersController.createUser(new Users(update.getMessage().getFrom().getId(), "no"));
         } else if (user.getWasRegistered().equals("no")) {
-            sendMessage = createRegistrationYesOrNoMessage("""
-                    @CalorieTrackingBot позволяет отслеживать потребленные за день калории и собирать статистику.
-                    
-                    Регистрация позволит расчитать норму дневного потребления.
-                 
-                    <b>Важно: Мы не храним персональные данные. Бот имеет доступ лишь к Telegram id.</b>
-
-                    Желаете зарегистрироваться?""", "REGISTRATION", update.getMessage()
+            sendMessage = createRegistrationYesOrNoMessage(Constants.HelloMessage, "REGISTRATION", update.getMessage()
                     .getChatId().toString());
         } else if (user.getWasRegistered().equals("yes") || user.getWasRegistered().equals("no registration")) {
             sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "С возвращением!");
             ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
-            ReplyKeyboardMarkup replyKeyboardMarkup = replyKeyboardModel.getReplyKeyboardMarkup(List.of(new String[]{"\uD83C\uDF54 Добавить продукт",
-                    "\uD83D\uDCA7 Добавить стакан", " \uD83D\uDCCA Статистика", "⚙️ Изменить данные", "❓Помощь", "\uD83C\uDF71 Моя норма"}), 2);
+            ReplyKeyboardMarkup replyKeyboardMarkup = replyKeyboardModel.getReplyKeyboardMarkup(Constants.FINAL_KEYBOARD, 2);
             sendMessage.setReplyMarkup(replyKeyboardMarkup);
         } else {
-            sendMessage = createRegistrationYesOrNoMessage("Хотели бы продолжить регистрацию?", "WAS_REGISTRATION_CONTINUED", update.getMessage()
-                    .getChatId().toString());
+            sendMessage = createRegistrationYesOrNoMessage("Хотели бы продолжить регистрацию?", "WAS_REGISTRATION_CONTINUED",
+                    update.getMessage().getChatId().toString());
         }
         return sendMessage;
     }
@@ -66,7 +51,7 @@ public class CommandsHandler {
         long userId = update.getMessage().getFrom().getId();
         usersController.updateAge(userId, age);
         usersController.updateWasRegistered(userId, "weight");
-        return new SendMessage(update.getMessage().getChatId().toString(), "Какой у вас вес (кг)?");
+        return new SendMessage(update.getMessage().getChatId().toString(), Constants.WHAT_IS_YOUR_WEIGHT_QUESTION);
     }
 
     public BotApiMethod<?> weightCommandReceived(Update update, UsersController usersController) {
@@ -82,15 +67,14 @@ public class CommandsHandler {
         long userId = update.getMessage().getFrom().getId();
         usersController.updateWeight(userId, weight);
         usersController.updateWasRegistered(userId, "height");
-        return new SendMessage(update.getMessage().getChatId().toString(), "Какой у вас рост (см)?");
+        return new SendMessage(update.getMessage().getChatId().toString(), Constants.WHAT_IS_YOUR_HEIGHT_QUESTION);
     }
 
     public BotApiMethod<?> heightCommandReceived(Update update, UsersController usersController) {
         String messageText = update.getMessage().getText();
         Double height = NumbersUtil.parseDouble(messageText);
         if (height == null) {
-            return new SendMessage(update.getMessage().getChatId()
-                    .toString(), "Рост должен быть целым или дробным числом");
+            return new SendMessage(update.getMessage().getChatId().toString(), "Рост должен быть целым или дробным числом");
         }
         if (!NumbersUtil.checkHeight(height)) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный рост: " + height);
@@ -99,9 +83,8 @@ public class CommandsHandler {
         usersController.updateHeight(userId, height);
         usersController.updateWasRegistered(userId, "goal");
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId()
-                .toString(), "Какова ваша цель отслеживания килокалорий?");
-        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Похудение", "Поддержание веса", "Набор массы"}), "GOAL"));
+        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), Constants.WHAT_IS_YOUR_GOAL_QUESTION);
+        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GOAL_BUTTONS, "GOAL"));
         return sendMessage;
     }
 
@@ -138,8 +121,7 @@ public class CommandsHandler {
         String messageText = update.getMessage().getText();
         Double height = NumbersUtil.parseDouble(messageText);
         if (height == null) {
-            return new SendMessage(update.getMessage().getChatId()
-                    .toString(), "Рост должен быть целым или дробным числом");
+            return new SendMessage(update.getMessage().getChatId().toString(), "Рост должен быть целым или дробным числом");
         }
         if (!NumbersUtil.checkHeight(height)) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный рост: " + height);
@@ -172,14 +154,9 @@ public class CommandsHandler {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(update.getMessage().getFrom().getId().toString());
         sendMessage.setParseMode(ParseMode.HTML);
-        sendMessage.setText("\n\nВаш пол: <b>" + user.getGender() +
-                        "</b>\nВаш возраст <b>: " + user.getAge() +
-                        "</b>\nВаш вес: <b>" + user.getWeight() +
-                        "</b>\nВаш рост: <b>" + user.getHeight() +
-                        "</b>\nВаша цель: <b>" + user.getGoal() +
-                        "</b>\nВаша активность <b>: " + user.getActivity() + "</b>");
+        sendMessage.setText(Constants.getAllDataMessage(user));
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Сохранить ✅", "Изменить ⚙️"}), "IS_REGISTRATION_CORRECT"));
+        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.SAVE_OR_CHANGE_BUTTONS, "IS_REGISTRATION_CORRECT"));
         return sendMessage;
     }
 
@@ -189,8 +166,9 @@ public class CommandsHandler {
 
     public BotApiMethod<?> getNormCommandReceived(Update update, UsersController usersController) {
         Users user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
-        if (user.getWasRegistered().equals("no registration")) {
-            return new SendMessage(update.getMessage().getChatId().toString(), "Необходимо зарегистрироваться для расчета формулы");
+        if (user.getGender() == null || user.getAge() == 0 || user.getWeight() == 0 ||
+                user.getHeight() == 0 || user.getGoal() == null || user.getActivity() == null) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Необходимо заполнить все данные для подсчета нормы");
         }
         double result;
         if (user.getGender().equals("Мужчина")) {
@@ -215,9 +193,7 @@ public class CommandsHandler {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(update.getMessage().getChatId().toString());
         sendMessage.setParseMode(ParseMode.HTML);
-        sendMessage.setText("Результат был рассчитан по формуле " +
-                "Миффлина — Сан-Жеора с учетом вашей активности и цели похудения.\n\n" +
-                "Ваша норма ежедневного потребления: <b>" + (int) result + " ккал</b>");
+        sendMessage.setText(Constants.getFormulaResultMessage((int) result));
         return sendMessage;
     }
 
@@ -234,34 +210,27 @@ public class CommandsHandler {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(String.valueOf(userId));
         sendMessage.setParseMode(ParseMode.HTML);
-        sendMessage.setText("Ваши данные изменены." +
-                "\n\nВаш пол: <b>" + user.getGender() +
-                "</b>\nВаш возраст <b>: " + user.getAge() +
-                "</b>\nВаш вес: <b>" + user.getWeight() +
-                "</b>\nВаш рост: <b>" + user.getHeight() +
-                "</b>\nВаша цель: <b>" + user.getGoal() +
-                "</b>\nВаша активность <b>: " + user.getActivity() +
-                "</b>\n\nВсе верно?");
+        sendMessage.setText(Constants.getAllIsRightMessage(user));
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да ✅", "Изменить ⚙️"}), "IS_REGISTRATION_CORRECT"));
+        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.YES_OR_CHANGE_BUTTONS, "IS_REGISTRATION_CORRECT"));
         return sendMessage;
     }
 
-    private BotApiMethod <?> createFinalKeyboard(Update update){
+    private BotApiMethod<?> createFinalKeyboard(Update update) {
         SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Вам доступен основной функционал бота");
         ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
-        ReplyKeyboardMarkup replyKeyboardMarkup = replyKeyboardModel.getReplyKeyboardMarkup(List.of(new String[]{"\uD83C\uDF54 Добавить продукт",
-                "\uD83D\uDCA7 Добавить стакан", " \uD83D\uDCCA Статистика", "⚙️ Изменить данные", "❓Помощь", "\uD83C\uDF71 Моя норма"}), 2);
+        ReplyKeyboardMarkup replyKeyboardMarkup = replyKeyboardModel.getReplyKeyboardMarkup(Constants.FINAL_KEYBOARD, 2);
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
         return sendMessage;
     }
+
     private SendMessage createRegistrationYesOrNoMessage(String messageText, String callbackData, String chatId) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
         sendMessage.setParseMode(ParseMode.HTML);
         sendMessage.setText(messageText);
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of(new String[]{"Да ✅", "Нет ❌"}), callbackData));
+        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.YES_OR_NO_BUTTONS, callbackData));
         return sendMessage;
     }
 }
