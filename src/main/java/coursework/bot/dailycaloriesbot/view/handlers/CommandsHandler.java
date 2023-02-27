@@ -1,20 +1,22 @@
 package coursework.bot.dailycaloriesbot.view.handlers;
 
-import coursework.bot.dailycaloriesbot.Constants.Constants;
-import coursework.bot.dailycaloriesbot.controller.UsersController;
-import coursework.bot.dailycaloriesbot.entity.Users;
+
+import coursework.bot.dailycaloriesbot.constants.Constants;
+import coursework.bot.dailycaloriesbot.controllers.ProductsController;
+import coursework.bot.dailycaloriesbot.controllers.UsersController;
+import coursework.bot.dailycaloriesbot.entities.Products;
+import coursework.bot.dailycaloriesbot.entities.Users;
 import coursework.bot.dailycaloriesbot.utills.NumbersUtil;
 import coursework.bot.dailycaloriesbot.view.keyboards.InlineKeyboardModel;
 import coursework.bot.dailycaloriesbot.view.keyboards.ReplyKeyboardModel;
-import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import java.util.List;
 
-@Component
 public class CommandsHandler {
 
     public BotApiMethod<?> startCommandReceived(Update update, UsersController usersController) { // обработчик команды /start
@@ -135,8 +137,11 @@ public class CommandsHandler {
         return createFinalKeyboard(update);
     }
 
-    public BotApiMethod<?> addProductCommandReceived(Update update, UsersController usersController) {
-        return new SendMessage(update.getMessage().getChatId().toString(), "addProductCommandReceived");
+    public BotApiMethod<?> addProductCommandReceived(Update update) {
+        InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
+        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Выберите продукт");
+        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of("продукты", "Другой"), "ADD_PRODUCT"));
+        return sendMessage;
     }
 
     public BotApiMethod<?> addGlassOfWaterCommandReceived(Update update, UsersController usersController) {
@@ -197,6 +202,22 @@ public class CommandsHandler {
         return sendMessage;
     }
 
+    public BotApiMethod<?> productReceived(Update update, UsersController usersController, ProductsController productsController) {
+        String productName = update.getMessage().getText();
+        Products product = productsController.getProduct(productName);
+        long userId = update.getMessage().getFrom().getId();
+        if (product == null) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Товар не найден");
+        }
+        Users user = usersController.getUserByTelegramId(userId);
+        usersController.increaseDailyCalorieIntake(userId, product.getKilocalories());
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(update.getMessage().getChatId());
+        sendMessage.setParseMode(ParseMode.HTML);
+        sendMessage.setText(Constants.getProductAddedMessage(product, user));
+        return sendMessage;
+    }
+
     public BotApiMethod<?> unknownCommandReceived(Update update) { // обработчик неизвестной команды
         if (update.getMessage().getText().startsWith("/")) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Получена неизвестная команда");
@@ -210,7 +231,7 @@ public class CommandsHandler {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(String.valueOf(userId));
         sendMessage.setParseMode(ParseMode.HTML);
-        sendMessage.setText(Constants.getAllIsRightMessage(user));
+        sendMessage.setText(Constants.getIsAllRightMessage(user));
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
         sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.YES_OR_CHANGE_BUTTONS, "IS_REGISTRATION_CORRECT"));
         return sendMessage;

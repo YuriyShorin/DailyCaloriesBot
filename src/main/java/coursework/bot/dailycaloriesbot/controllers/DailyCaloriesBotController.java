@@ -1,4 +1,4 @@
-package coursework.bot.dailycaloriesbot.controller;
+package coursework.bot.dailycaloriesbot.controllers;
 
 import coursework.bot.dailycaloriesbot.view.DailyCaloriesBot;
 import org.springframework.web.bind.annotation.PostMapping;

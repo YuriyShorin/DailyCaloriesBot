@@ -1,6 +1,6 @@
-package coursework.bot.dailycaloriesbot.controller;
+package coursework.bot.dailycaloriesbot.controllers;
 
-import coursework.bot.dailycaloriesbot.entity.Users;
+import coursework.bot.dailycaloriesbot.entities.Users;
 import coursework.bot.dailycaloriesbot.repositories.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
@@ -83,11 +83,30 @@ public class UsersController {
         }
     }
 
+    public void zeroGlassesOfWaterAndDailyCalorieIntakeForAllUsers() {
+        Iterable<Users> usersData = usersRepository.findAll();
+        while (usersData.iterator().hasNext()) {
+            Users user = usersData.iterator().next();
+            user.setGlassesOfWater(0);
+            user.setDailyCalorieIntake(0);
+            usersRepository.save(user);
+        }
+    }
+
     public void incrementGlassesOfWater(long id) {
         Optional<Users> usersData = usersRepository.findById(id);
         if (usersData.isPresent()) {
             Users user = usersData.get();
             user.setGlassesOfWater(user.getGlassesOfWater() + 1);
+            usersRepository.save(user);
+        }
+    }
+
+    public void increaseDailyCalorieIntake(long id, double numberToIncrease) {
+        Optional<Users> usersData = usersRepository.findById(id);
+        if (usersData.isPresent()) {
+            Users user = usersData.get();
+            user.setDailyCalorieIntake(user.getDailyCalorieIntake() + numberToIncrease);
             usersRepository.save(user);
         }
     }

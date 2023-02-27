@@ -1,8 +1,8 @@
 package coursework.bot.dailycaloriesbot.view.handlers;
 
-import coursework.bot.dailycaloriesbot.Constants.Constants;
-import coursework.bot.dailycaloriesbot.controller.UsersController;
-import coursework.bot.dailycaloriesbot.entity.Users;
+import coursework.bot.dailycaloriesbot.constants.Constants;
+import coursework.bot.dailycaloriesbot.controllers.UsersController;
+import coursework.bot.dailycaloriesbot.entities.Users;
 import coursework.bot.dailycaloriesbot.view.keyboards.InlineKeyboardModel;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
@@ -11,6 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
 public class CallbackQueryHandler {
+
     public BotApiMethod<?> processCallBackQuery(CallbackQuery buttonQuery, UsersController usersController) {
         String data = buttonQuery.getData();
         if (data.startsWith("GENDER")) {
@@ -33,6 +34,8 @@ public class CallbackQueryHandler {
             return changeActivity(buttonQuery, data.substring(15), usersController);
         } else if (data.startsWith("WAS_REGISTRATION_CONTINUED")) {
             return continueRegistration(buttonQuery, data.substring(26), usersController);
+        } else if (data.startsWith("ADD_PRODUCT")) {
+            return addProduct(buttonQuery, data.substring(11));
         } else {
             return null;
         }
@@ -74,6 +77,7 @@ public class CallbackQueryHandler {
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(buttonQuery.getMessage().getChatId());
         editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
+        editMessageText.setParseMode(ParseMode.HTML);
         editMessageText.setText(Constants.WHAT_IS_YOUR_ACTIVITY_QUESTION);
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
         editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ACTIVITY_BUTTONS, "ACTIVITY"));
@@ -132,6 +136,7 @@ public class CallbackQueryHandler {
         } else if (data.endsWith("Активность")) {
             usersController.updateWasRegistered(userId, "change_activity");
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
+            editMessageText.setParseMode(ParseMode.HTML);
             editMessageText.setText(Constants.WHAT_IS_YOUR_ACTIVITY_QUESTION);
             editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ACTIVITY_BUTTONS, "change_ACTIVITY"));
         } else if (data.endsWith("Пройти регистрацию заново")) {
@@ -195,6 +200,7 @@ public class CallbackQueryHandler {
                     editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GOAL_BUTTONS, "GOAL"));
                 }
                 case "activity" -> {
+                    editMessageText.setParseMode(ParseMode.HTML);
                     editMessageText.setText(Constants.WHAT_IS_YOUR_ACTIVITY_QUESTION);
                     editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ACTIVITY_BUTTONS, "ACTIVITY"));
                 }
@@ -208,13 +214,26 @@ public class CallbackQueryHandler {
         return editMessageText;
     }
 
+    private BotApiMethod<?> addProduct(CallbackQuery buttonQuery, String answer) {
+        EditMessageText editMessageText = new EditMessageText();
+        editMessageText.setChatId(buttonQuery.getMessage().getChatId().toString());
+        editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
+        editMessageText.setReplyMarkup(new InlineKeyboardMarkup());
+        if (answer.equals("Другой")) {
+            editMessageText.setText("Введите продукт");
+        } else {
+            editMessageText.setText("Еще нет функционала :(");
+        }
+        return editMessageText;
+    }
+
     private BotApiMethod<?> createFinalRegistrationMessage(CallbackQuery buttonQuery, UsersController usersController) {
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(buttonQuery.getMessage().getChatId().toString());
         editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
         Users user = usersController.getUserByTelegramId(buttonQuery.getFrom().getId());
         editMessageText.setParseMode(ParseMode.HTML);
-        editMessageText.setText(Constants.getAllIsRightMessage(user));
+        editMessageText.setText(Constants.getIsAllRightMessage(user));
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
         editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.YES_OR_CHANGE_BUTTONS, "IS_REGISTRATION_CORRECT"));
         return editMessageText;

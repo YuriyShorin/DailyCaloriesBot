@@ -1,7 +1,6 @@
 package coursework.bot.dailycaloriesbot.schedule;
 
-import coursework.bot.dailycaloriesbot.entity.Users;
-import coursework.bot.dailycaloriesbot.repositories.UsersRepository;
+import coursework.bot.dailycaloriesbot.controllers.UsersController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -11,16 +10,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class Schedule {
     @Autowired
-    UsersRepository usersRepository;
+    UsersController usersController;
 
     @Scheduled(cron = "0 0 0 * * *")
     private void ResetDailyFieldsInDatabase() {
-        Iterable<Users> usersData = usersRepository.findAll();
-        while (usersData.iterator().hasNext()) {
-            Users user = usersData.iterator().next();
-            user.setGlassesOfWater(0);
-            usersRepository.save(user);
-        }
+        usersController.zeroGlassesOfWaterAndDailyCalorieIntakeForAllUsers();
     }
 }
 
