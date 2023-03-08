@@ -15,6 +15,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class CommandsHandler {
@@ -25,14 +27,14 @@ public class CommandsHandler {
         if (user == null) {
             sendMessage = createRegistrationYesOrNoMessage(Constants.HelloMessage, "REGISTRATION", update.getMessage()
                     .getChatId().toString());
-            usersController.createUser(new Users(update.getMessage().getFrom().getId(), "no"));
+            usersController.createUser(new Users(update.getMessage().getFrom().getId(), "no", "no"));
         } else if (user.getWasRegistered().equals("no")) {
             sendMessage = createRegistrationYesOrNoMessage(Constants.HelloMessage, "REGISTRATION", update.getMessage()
                     .getChatId().toString());
         } else if (user.getWasRegistered().equals("yes") || user.getWasRegistered().equals("no registration")) {
             sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "С возвращением!");
             ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
-            ReplyKeyboardMarkup replyKeyboardMarkup = replyKeyboardModel.getReplyKeyboardMarkup(Constants.FINAL_KEYBOARD, 2);
+            ReplyKeyboardMarkup replyKeyboardMarkup = replyKeyboardModel.getReplyKeyboardMarkup(Constants.FINAL_KEYBOARD, 2, false);
             sendMessage.setReplyMarkup(replyKeyboardMarkup);
         } else {
             sendMessage = createRegistrationYesOrNoMessage("Хотели бы продолжить регистрацию?", "WAS_REGISTRATION_CONTINUED",
@@ -76,7 +78,8 @@ public class CommandsHandler {
         String messageText = update.getMessage().getText();
         Double height = NumbersUtil.parseDouble(messageText);
         if (height == null) {
-            return new SendMessage(update.getMessage().getChatId().toString(), "Рост должен быть целым или дробным числом");
+            return new SendMessage(update.getMessage().getChatId()
+                    .toString(), "Рост должен быть целым или дробным числом");
         }
         if (!NumbersUtil.checkHeight(height)) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный рост: " + height);
@@ -85,7 +88,8 @@ public class CommandsHandler {
         usersController.updateHeight(userId, height);
         usersController.updateWasRegistered(userId, "goal");
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), Constants.WHAT_IS_YOUR_GOAL_QUESTION);
+        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId()
+                .toString(), Constants.WHAT_IS_YOUR_GOAL_QUESTION);
         sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GOAL_BUTTONS, "GOAL"));
         return sendMessage;
     }
@@ -123,7 +127,8 @@ public class CommandsHandler {
         String messageText = update.getMessage().getText();
         Double height = NumbersUtil.parseDouble(messageText);
         if (height == null) {
-            return new SendMessage(update.getMessage().getChatId().toString(), "Рост должен быть целым или дробным числом");
+            return new SendMessage(update.getMessage().getChatId()
+                    .toString(), "Рост должен быть целым или дробным числом");
         }
         if (!NumbersUtil.checkHeight(height)) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный рост: " + height);
@@ -133,7 +138,9 @@ public class CommandsHandler {
         return createFinalRegistrationMessage(userId, usersController);
     }
 
-    public BotApiMethod<?> continueCommandReceived(Update update) {
+    public BotApiMethod<?> continueCommandReceived(Update update, UsersController usersController) {
+        long userId = update.getMessage().getFrom().getId();
+        usersController.updateFindProduct(userId, "no");
         return createFinalKeyboard(update);
     }
 
@@ -147,7 +154,8 @@ public class CommandsHandler {
     public BotApiMethod<?> addGlassOfWaterCommandReceived(Update update, UsersController usersController) {
         long userId = update.getMessage().getFrom().getId();
         usersController.incrementGlassesOfWater(userId);
-        return new SendMessage(String.valueOf(userId), "За день было выпито: " + usersController.getUserByTelegramId(userId).getGlassesOfWater());
+        return new SendMessage(String.valueOf(userId), "За день было выпито: " + usersController.getUserByTelegramId(userId)
+                .getGlassesOfWater());
     }
 
     public BotApiMethod<?> getStatisticsCommandReceived(Update update, UsersController usersController) {
@@ -173,7 +181,8 @@ public class CommandsHandler {
         Users user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
         if (user.getGender() == null || user.getAge() == 0 || user.getWeight() == 0 ||
                 user.getHeight() == 0 || user.getGoal() == null || user.getActivity() == null) {
-            return new SendMessage(update.getMessage().getChatId().toString(), "Необходимо заполнить все данные для подсчета нормы");
+            return new SendMessage(update.getMessage().getChatId()
+                    .toString(), "Необходимо заполнить все данные для подсчета нормы");
         }
         double result;
         if (user.getGender().equals("Мужчина")) {
@@ -204,17 +213,20 @@ public class CommandsHandler {
 
     public BotApiMethod<?> productReceived(Update update, UsersController usersController, ProductsController productsController) {
         String productName = update.getMessage().getText();
-        Products product = productsController.getProduct(productName);
         long userId = update.getMessage().getFrom().getId();
+        Products product = productsController.getProduct(productName);
         if (product == null) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Товар не найден");
         }
         Users user = usersController.getUserByTelegramId(userId);
         usersController.increaseDailyCalorieIntake(userId, product.getKilocalories());
+        ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
+        ReplyKeyboardMarkup replyKeyboardMarkup = replyKeyboardModel.getReplyKeyboardMarkup(Constants.FINAL_KEYBOARD, 2, false);
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(update.getMessage().getChatId());
         sendMessage.setParseMode(ParseMode.HTML);
         sendMessage.setText(Constants.getProductAddedMessage(product, user));
+        sendMessage.setReplyMarkup(replyKeyboardMarkup);
         return sendMessage;
     }
 
@@ -238,9 +250,10 @@ public class CommandsHandler {
     }
 
     private BotApiMethod<?> createFinalKeyboard(Update update) {
-        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Вам доступен основной функционал бота");
+        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId()
+                .toString(), "Вам доступен основной функционал бота");
         ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
-        ReplyKeyboardMarkup replyKeyboardMarkup = replyKeyboardModel.getReplyKeyboardMarkup(Constants.FINAL_KEYBOARD, 2);
+        ReplyKeyboardMarkup replyKeyboardMarkup = replyKeyboardModel.getReplyKeyboardMarkup(Constants.FINAL_KEYBOARD, 2, false);
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
         return sendMessage;
     }
@@ -253,5 +266,37 @@ public class CommandsHandler {
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
         sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.YES_OR_NO_BUTTONS, callbackData));
         return sendMessage;
+    }
+
+    public BotApiMethod<?> findProductCommandReceived(Update update, UsersController usersController, ProductsController productsController) {
+        long userId = update.getMessage().getFrom().getId();
+        String productName = update.getMessage().getText().toLowerCase();
+        if (productName.length() < 3) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Введите не менее 3-х символов");
+        }
+        List<Products> products = productsController.getProducts("%" + productName + "%");
+        System.out.println(productName + " " + products.size());
+        if (products.isEmpty()) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Товар не найден. Введите название товара повторно или нажмите /continue");
+        }
+        usersController.updateFindProduct(userId, "no");
+        List<String> listOfProducts = new ArrayList<>();
+        for (Products value : products) {
+            String product = value.getProduct();
+            listOfProducts.add(product);
+        }
+        listOfProducts.add("Выбрать другой продукт");
+        ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setText("Выберите продукт");
+        sendMessage.setChatId(update.getMessage().getChatId());
+        sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfProducts, 1, true));
+        return sendMessage;
+    }
+
+    public BotApiMethod<?> findAgainProductCommandReceived(Update update, UsersController usersController, ProductsController productsController) {
+        long userId = update.getMessage().getFrom().getId();
+        usersController.updateFindProduct(userId, "yes");
+        return new SendMessage(update.getMessage().getFrom().getId().toString(), "Введите продукт");
     }
 }

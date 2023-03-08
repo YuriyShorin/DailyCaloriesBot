@@ -38,10 +38,14 @@ public class TelegramFacade {
             if (messageText.equals("/continue")) {
                 return processCommand(update, messageText);
             }
+            String isFindProduct = user.getFindProduct();
+            if (isFindProduct.equals("yes")) {
+                return processCommand(update, "findProduct");
+            }
             String stageOfRegistration = user.getWasRegistered();
             return switch (stageOfRegistration) {
-                case "yes", "no registration" ->
-                        processCommand(update, update.getMessage().getText()); // процесс регистрации завершен // процесс регистрации завершен
+                case "yes", "no registration" -> processCommand(update, update.getMessage()
+                        .getText()); // процесс регистрации завершен // процесс регистрации завершен
                 case "age" -> processCommand(update, "age"); // процесс регистрации на стадии возраста
                 case "weight" -> processCommand(update, "weight"); // процесс регистрации на стадии веса
                 case "height" -> processCommand(update, "height"); // процесс регистрации на стадии роста
@@ -62,7 +66,7 @@ public class TelegramFacade {
         return switch (command) {
             case "/start" ->
                     commandsHandler.startCommandReceived(update, usersController); // если получена команда /start
-            case "/continue" -> commandsHandler.continueCommandReceived(update);
+            case "/continue" -> commandsHandler.continueCommandReceived(update, usersController);
             case "age" -> commandsHandler.ageCommandReceived(update, usersController);
             case "weight" -> commandsHandler.weightCommandReceived(update, usersController);
             case "height" -> commandsHandler.heightCommandReceived(update, usersController);
@@ -70,11 +74,14 @@ public class TelegramFacade {
             case "change_height" -> commandsHandler.changeHeightCommandReceived(update, usersController);
             case "change_weight" -> commandsHandler.changeWeightCommandReceived(update, usersController);
             case "\uD83C\uDF54 Добавить продукт" -> commandsHandler.addProductCommandReceived(update);
-            case "\uD83D\uDCA7 Добавить стакан" -> commandsHandler.addGlassOfWaterCommandReceived(update, usersController);
+            case "\uD83D\uDCA7 Добавить стакан" ->
+                    commandsHandler.addGlassOfWaterCommandReceived(update, usersController);
             case "\uD83D\uDCCA Статистика" -> commandsHandler.getStatisticsCommandReceived(update, usersController);
             case "⚙️ Изменить данные" -> commandsHandler.changeDataCommandReceived(update, usersController);
             case "❓Помощь" -> commandsHandler.getHelpCommandReceived(update, usersController);
             case "\uD83C\uDF71 Моя норма" -> commandsHandler.getNormCommandReceived(update, usersController);
+            case "findProduct" -> commandsHandler.findProductCommandReceived(update, usersController, productsController);
+            case "Выбрать другой продукт" -> commandsHandler.findAgainProductCommandReceived(update, usersController, productsController);
             default -> commandsHandler.productReceived(update, usersController, productsController);
         };
     }

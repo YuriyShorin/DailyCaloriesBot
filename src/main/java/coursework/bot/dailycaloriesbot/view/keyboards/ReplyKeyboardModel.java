@@ -10,7 +10,7 @@ import java.util.List;
 
 @Component
 public class ReplyKeyboardModel {
-    public ReplyKeyboardMarkup getReplyKeyboardMarkup(List<String> buttonNames, int numberOfButtonsInRow) {
+    public ReplyKeyboardMarkup getReplyKeyboardMarkup(List<String> buttonNames, int numberOfButtonsInRow, boolean isOneTime) {
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
         for (int i = 0; i < buttonNames.size(); ++i) {
@@ -24,6 +24,7 @@ public class ReplyKeyboardModel {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setKeyboard(keyboard);
         replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(isOneTime);
         replyKeyboardMarkup.setResizeKeyboard(true);
         return replyKeyboardMarkup;
     }

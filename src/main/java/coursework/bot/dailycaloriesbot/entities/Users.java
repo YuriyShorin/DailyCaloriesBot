@@ -34,11 +34,14 @@ public class Users {
     @Column(name = "daily_calorie_intake")
     private double dailyCalorieIntake;
 
+    @Column(name = "find_product")
+    private String findProduct;
     protected Users() {
     }
 
-    public Users(Long telegramId, String wasRegistered) {
+    public Users(Long telegramId, String wasRegistered, String findProduct) {
         this.telegramId = telegramId;
         this.wasRegistered = wasRegistered;
+        this.findProduct = findProduct;
     }
 }

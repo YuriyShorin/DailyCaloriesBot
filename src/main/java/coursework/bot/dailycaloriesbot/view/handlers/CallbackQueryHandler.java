@@ -35,7 +35,7 @@ public class CallbackQueryHandler {
         } else if (data.startsWith("WAS_REGISTRATION_CONTINUED")) {
             return continueRegistration(buttonQuery, data.substring(26), usersController);
         } else if (data.startsWith("ADD_PRODUCT")) {
-            return addProduct(buttonQuery, data.substring(11));
+            return addProduct(buttonQuery, data.substring(11), usersController);
         } else {
             return null;
         }
@@ -142,7 +142,7 @@ public class CallbackQueryHandler {
         } else if (data.endsWith("Пройти регистрацию заново")) {
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
             usersController.deleteUser(buttonQuery.getFrom().getId());
-            usersController.createUser(new Users(buttonQuery.getFrom().getId(), "gender"));
+            usersController.createUser(new Users(buttonQuery.getFrom().getId(), "gender", "no"));
             editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GENDER_BUTTONS, "GENDER"));
             editMessageText.setText(Constants.WHAT_IS_YOUR_GENDER_QUESTION);
         }
@@ -207,19 +207,21 @@ public class CallbackQueryHandler {
             }
         } else {
             usersController.deleteUser(userId);
-            usersController.createUser(new Users(userId, "no"));
+            usersController.createUser(new Users(userId, "no", "no"));
             editMessageText.setText(Constants.HelloMessage);
             editMessageText.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.YES_OR_NO_BUTTONS, "REGISTRATION")); // добавление двух кнопок
         }
         return editMessageText;
     }
 
-    private BotApiMethod<?> addProduct(CallbackQuery buttonQuery, String answer) {
+    private BotApiMethod<?> addProduct(CallbackQuery buttonQuery, String answer, UsersController usersController) {
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setChatId(buttonQuery.getMessage().getChatId().toString());
         editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
         editMessageText.setReplyMarkup(new InlineKeyboardMarkup());
         if (answer.equals("Другой")) {
+            long userId = buttonQuery.getFrom().getId();
+            usersController.updateFindProduct(userId, "yes");
             editMessageText.setText("Введите продукт");
         } else {
             editMessageText.setText("Еще нет функционала :(");
