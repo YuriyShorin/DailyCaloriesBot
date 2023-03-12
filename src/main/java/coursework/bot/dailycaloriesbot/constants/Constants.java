@@ -8,6 +8,7 @@ public class Constants {
 
     public static final String YES = "Да ✅";
     public static final String CHANGE = "Изменить ⚙️";
+    public static final String ADD = "Добавить ✅";
     public static final String HelloMessage = """
             @CalorieTrackingBot позволяет отслеживать потребленные за день калории и собирать статистику.
                                 
@@ -16,14 +17,6 @@ public class Constants {
             <b>Важно: Мы не храним персональные данные. Бот имеет доступ лишь к Telegram id.</b>
 
             Желаете зарегистрироваться?""";
-    public static final String CONTINUE_MESSAGE = """
-            Ваши данные сохранены.
-
-            Нажмите /continue для продолжения.""";
-    public static final String CONTINUE_WITHOUT_REGISTRATION_MESSAGE = """
-            Вы всегда можете дополнить свои данные в разделе "Изменить данные"\s
-
-            Нажмите /continue для начала работы с ботом.""";
     public static String WHAT_IS_YOUR_GENDER_QUESTION = "Какого вы пола?";
     public static String WHAT_IS_YOUR_AGE_QUESTION = "Сколько вам лет?";
     public static String WHAT_IS_YOUR_WEIGHT_QUESTION = "Какой у вас вес (кг)?";
@@ -33,13 +26,13 @@ public class Constants {
             Какая у вас активность?
 
             <b>Минимальная</b> - сидячая работа, не требующая значительных физических нагрузок.
-            
+                        
             <b>Слабая</b> - интенсивные упражнения не менее 20 минут один-три раза в неделю.
-            
+                        
             <b>Умеренная</b> - интенсивная тренировка не менее 30-60 мин три-четыре раза в неделю.
-            
+                        
             <b>Тяжелая</b> - интенсивные упражнения и занятия спортом 5-7 дней в неделю или трудоемкая работа.
-            
+                        
             <b>Экстремальная</b> - занятия спортом с почти ежедневным графиком и несколькими тренировками в течение дня или очень трудоемкая работа.""";
     public static final List<String> YES_OR_NO_BUTTONS = List.of(new String[]{"Да ✅", "Нет ❌"});
     public static final List<String> YES_OR_CHANGE_BUTTONS = List.of(new String[]{"Да ✅", "Изменить ⚙️"});
@@ -52,6 +45,7 @@ public class Constants {
             "Цель", "Активность", "Пройти регистрацию заново"});
     public static final List<String> FINAL_KEYBOARD = List.of(new String[]{"\uD83C\uDF54 Добавить продукт",
             "\uD83D\uDCA7 Добавить стакан", " \uD83D\uDCCA Статистика", "⚙️ Изменить данные", "❓Помощь", "\uD83C\uDF71 Моя норма"});
+    public static final List<String> ADD_OR_INFO_BUTTONS = List.of(new String[]{"Добавить ✅", "Не добавлять ❌"});
 
     public static String getIsAllRightMessage(Users user) {
         return "Ваши данные изменены." +
@@ -76,15 +70,22 @@ public class Constants {
     public static String getFormulaResultMessage(int result) {
         return "Результат был рассчитан по формуле " +
                 "Миффлина — Сан-Жеора с учетом вашей активности и цели похудения.\n\n" +
-                "Ваша норма ежедневного потребления: <b>" + result + " ккал</b>";
+                "Ваша норма ежедневного потребления: <b>" + result + " ккал</b>.";
     }
 
-    public static String getProductAddedMessage(Products product, Users user) {
+    public static String getProductAddedMessage(Products product) {
         return product.getProduct() +
                 "\n\nКкал: <b>" + product.getKilocalories() +
                 "</b>\nБелки: <b>" + product.getProteins() +
                 "</b>\nЖиры: <b>" + product.getFats() +
-                "</b>\nУглеводы: <b>" + product.getCarbohydrates() +
-                "\n\n</b>Калорий за день: <b>" + user.getDailyCalorieIntake() + "</b>";
+                "</b>\nУглеводы: <b>" + product.getCarbohydrates() + "</b>";
+    }
+
+    public static String getUserIntakeMessage(Users user) {
+        return "Потреблено калорий: <b>" + user.getDailyCalorieIntake() + "</b>.";
+    }
+
+    public static String getProductWontBeCountedMessage(Users user) {
+        return "Продукт не будет учтен в потребленных калориях.\n\n" + getUserIntakeMessage(user);
     }
 }
