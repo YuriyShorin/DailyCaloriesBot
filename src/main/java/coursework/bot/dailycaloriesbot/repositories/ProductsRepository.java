@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface ProductsRepository extends CrudRepository<Products, Integer> {
     Optional<Products> findByProduct(String product);
-    @Query("select p from Products p " +
-            "where lower(p.product) like :product")
+
+    @Query("SELECT p FROM Products p WHERE lower(p.product) LIKE :product")
     List<Products> findByProductLike(@Param("product") String product);
 }

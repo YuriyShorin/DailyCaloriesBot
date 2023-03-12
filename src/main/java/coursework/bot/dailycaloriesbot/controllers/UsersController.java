@@ -17,7 +17,7 @@ public class UsersController {
     }
 
     public void createUser(Users user) {
-        usersRepository.save(new Users(user.getTelegramId(), user.getWasRegistered(), user.getFindProduct()));
+        usersRepository.save(new Users(user.getTelegramId(), user.getWasRegistered()));
     }
 
     public void updateWasRegistered(long id, String wasRegistered) {
@@ -79,15 +79,6 @@ public class UsersController {
         if (usersData.isPresent()) {
             Users user = usersData.get();
             user.setActivity(activity);
-            usersRepository.save(user);
-        }
-    }
-
-    public void updateFindProduct(long id, String isFindProduct) {
-        Optional<Users> usersData = usersRepository.findById(id);
-        if (usersData.isPresent()) {
-            Users user = usersData.get();
-            user.setFindProduct(isFindProduct);
             usersRepository.save(user);
         }
     }

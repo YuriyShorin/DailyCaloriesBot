@@ -1,6 +1,5 @@
 package coursework.bot.dailycaloriesbot.view.handlers;
 
-
 import coursework.bot.dailycaloriesbot.constants.Constants;
 import coursework.bot.dailycaloriesbot.controllers.ProductsController;
 import coursework.bot.dailycaloriesbot.controllers.UsersController;
@@ -27,7 +26,7 @@ public class CommandsHandler {
         if (user == null) {
             sendMessage = createRegistrationYesOrNoMessage(Constants.HelloMessage, "REGISTRATION", update.getMessage()
                     .getChatId().toString());
-            usersController.createUser(new Users(update.getMessage().getFrom().getId(), "no", "no"));
+            usersController.createUser(new Users(update.getMessage().getFrom().getId(), "no"));
         } else if (user.getWasRegistered().equals("no")) {
             sendMessage = createRegistrationYesOrNoMessage(Constants.HelloMessage, "REGISTRATION", update.getMessage()
                     .getChatId().toString());
@@ -138,12 +137,6 @@ public class CommandsHandler {
         return createFinalRegistrationMessage(userId, usersController);
     }
 
-    public BotApiMethod<?> continueCommandReceived(Update update, UsersController usersController) {
-        long userId = update.getMessage().getFrom().getId();
-        usersController.updateFindProduct(userId, "no");
-        return createFinalKeyboard(update);
-    }
-
     public BotApiMethod<?> addProductCommandReceived(Update update) {
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
         SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Выберите продукт");
@@ -211,22 +204,37 @@ public class CommandsHandler {
         return sendMessage;
     }
 
-    public BotApiMethod<?> productReceived(Update update, UsersController usersController, ProductsController productsController) {
-        String productName = update.getMessage().getText();
-        long userId = update.getMessage().getFrom().getId();
-        Products product = productsController.getProduct(productName);
-        if (product == null) {
+    public BotApiMethod<?> productReceived(Update update, ProductsController productsController) {
+        String productName = update.getMessage().getText().toLowerCase();
+        if (productName.length() < 3) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Введите не менее 3-х символов");
+        }
+
+        Products product = productsController.getProductByName(update.getMessage().getText());
+        if (product != null) {
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(update.getMessage().getChatId().toString());
+            sendMessage.setParseMode(ParseMode.HTML);
+            sendMessage.setText(Constants.getProductAddedMessage(product));
+            InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
+            sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_OR_INFO_BUTTONS, "PRODUCT_INFO" + product.getId() + "/"));
+            return sendMessage;
+        }
+        List<Products> listOfProducts = productsController.getProductsByName("%" + productName + "%");
+        if (listOfProducts.isEmpty()) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Товар не найден");
         }
-        Users user = usersController.getUserByTelegramId(userId);
-        usersController.increaseDailyCalorieIntake(userId, product.getKilocalories());
+        List<String> listOfNamesOfProducts = new ArrayList<>();
+        for (Products value : listOfProducts) {
+            String name = value.getProduct();
+            listOfNamesOfProducts.add(name);
+        }
+        listOfNamesOfProducts.add("Выбрать другой продукт");
         ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
-        ReplyKeyboardMarkup replyKeyboardMarkup = replyKeyboardModel.getReplyKeyboardMarkup(Constants.FINAL_KEYBOARD, 2, false);
         SendMessage sendMessage = new SendMessage();
+        sendMessage.setText("Выберите продукт");
         sendMessage.setChatId(update.getMessage().getChatId());
-        sendMessage.setParseMode(ParseMode.HTML);
-        sendMessage.setText(Constants.getProductAddedMessage(product, user));
-        sendMessage.setReplyMarkup(replyKeyboardMarkup);
+        sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfNamesOfProducts, 1, true));
         return sendMessage;
     }
 
@@ -249,14 +257,6 @@ public class CommandsHandler {
         return sendMessage;
     }
 
-    private BotApiMethod<?> createFinalKeyboard(Update update) {
-        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId()
-                .toString(), "Вам доступен основной функционал бота");
-        ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
-        ReplyKeyboardMarkup replyKeyboardMarkup = replyKeyboardModel.getReplyKeyboardMarkup(Constants.FINAL_KEYBOARD, 2, false);
-        sendMessage.setReplyMarkup(replyKeyboardMarkup);
-        return sendMessage;
-    }
 
     private SendMessage createRegistrationYesOrNoMessage(String messageText, String callbackData, String chatId) {
         SendMessage sendMessage = new SendMessage();
@@ -268,35 +268,7 @@ public class CommandsHandler {
         return sendMessage;
     }
 
-    public BotApiMethod<?> findProductCommandReceived(Update update, UsersController usersController, ProductsController productsController) {
-        long userId = update.getMessage().getFrom().getId();
-        String productName = update.getMessage().getText().toLowerCase();
-        if (productName.length() < 3) {
-            return new SendMessage(update.getMessage().getChatId().toString(), "Введите не менее 3-х символов");
-        }
-        List<Products> products = productsController.getProducts("%" + productName + "%");
-        System.out.println(productName + " " + products.size());
-        if (products.isEmpty()) {
-            return new SendMessage(update.getMessage().getChatId().toString(), "Товар не найден. Введите название товара повторно или нажмите /continue");
-        }
-        usersController.updateFindProduct(userId, "no");
-        List<String> listOfProducts = new ArrayList<>();
-        for (Products value : products) {
-            String product = value.getProduct();
-            listOfProducts.add(product);
-        }
-        listOfProducts.add("Выбрать другой продукт");
-        ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setText("Выберите продукт");
-        sendMessage.setChatId(update.getMessage().getChatId());
-        sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfProducts, 1, true));
-        return sendMessage;
-    }
-
-    public BotApiMethod<?> findAgainProductCommandReceived(Update update, UsersController usersController, ProductsController productsController) {
-        long userId = update.getMessage().getFrom().getId();
-        usersController.updateFindProduct(userId, "yes");
+    public BotApiMethod<?> findAnotherProductCommandReceived(Update update) {
         return new SendMessage(update.getMessage().getFrom().getId().toString(), "Введите продукт");
     }
 }

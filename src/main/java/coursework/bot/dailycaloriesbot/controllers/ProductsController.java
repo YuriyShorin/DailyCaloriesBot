@@ -14,12 +14,18 @@ public class ProductsController {
     @Autowired
     ProductsRepository productsRepository;
 
-    public Products getProduct(String product) {
-        Optional<Products> productsData = productsRepository.findByProduct(product);
+    public Products getProductById(int id) {
+        Optional<Products> usersData = productsRepository.findById(id);
+        return usersData.orElse(null);
+    }
+
+    public Products getProductByName(String name) {
+        Optional<Products> productsData = productsRepository.findByProduct(name);
         return productsData.orElse(null);
     }
 
-    public List<Products> getProducts(String product) {
+    public List<Products> getProductsByName(String product) {
         return productsRepository.findByProductLike(product);
     }
 }
+
