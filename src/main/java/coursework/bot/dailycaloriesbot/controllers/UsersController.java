@@ -1,5 +1,6 @@
 package coursework.bot.dailycaloriesbot.controllers;
 
+import coursework.bot.dailycaloriesbot.entities.Products;
 import coursework.bot.dailycaloriesbot.entities.Users;
 import coursework.bot.dailycaloriesbot.repositories.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,8 +9,13 @@ import java.util.Optional;
 
 @RestController
 public class UsersController {
+
+    private final UsersRepository usersRepository;
+
     @Autowired
-    UsersRepository usersRepository;
+    public UsersController(UsersRepository usersRepository) {
+        this.usersRepository = usersRepository;
+    }
 
     public Users getUserByTelegramId(long telegramId) {
         Optional<Users> usersData = usersRepository.findById(telegramId);
@@ -83,12 +89,15 @@ public class UsersController {
         }
     }
 
-    public void zeroGlassesOfWaterAndDailyCalorieIntakeForAllUsers() {
+    public void zeroGlassesOfWaterAndDailyIntakeForAllUsers() {
         Iterable<Users> usersData = usersRepository.findAll();
         while (usersData.iterator().hasNext()) {
             Users user = usersData.iterator().next();
             user.setGlassesOfWater(0);
             user.setDailyCalorieIntake(0);
+            user.setDailyProteinsIntake(0);
+            user.setDailyFatsIntake(0);
+            user.setDailyCarbohydratesIntake(0);
             usersRepository.save(user);
         }
     }
@@ -102,11 +111,15 @@ public class UsersController {
         }
     }
 
-    public void increaseDailyCalorieIntake(long id, double numberToIncrease) {
+    public void increaseDailyIntake(long id, Products products, int grams) {
         Optional<Users> usersData = usersRepository.findById(id);
         if (usersData.isPresent()) {
             Users user = usersData.get();
-            user.setDailyCalorieIntake(user.getDailyCalorieIntake() + numberToIncrease);
+            double coefficient = grams / 100.0;
+            user.setDailyCalorieIntake(user.getDailyCalorieIntake() + products.getKilocalories() * coefficient);
+            user.setDailyProteinsIntake(user.getDailyProteinsIntake() + products.getProteins() * coefficient);
+            user.setDailyFatsIntake(user.getDailyFatsIntake() + products.getFats() * coefficient);
+            user.setDailyCarbohydratesIntake(user.getDailyCarbohydratesIntake() + products.getCarbohydrates() * coefficient);
             usersRepository.save(user);
         }
     }

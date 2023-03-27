@@ -14,7 +14,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -177,57 +176,80 @@ public class CommandsHandler {
             return new SendMessage(update.getMessage().getChatId()
                     .toString(), "Необходимо заполнить все данные для подсчета нормы");
         }
-        double result;
+        double calories;
         if (user.getGender().equals("Мужчина")) {
-            result = 9.99 * user.getWeight() + 6.25 * user.getHeight() - 4.92 * user.getAge() + 5;
+            calories = 9.99 * user.getWeight() + 6.25 * user.getHeight() - 4.92 * user.getAge() + 5;
         } else {
-            result = 9.99 * user.getWeight() + 6.25 * user.getHeight() - 4.92 * user.getAge() - 161;
+            calories = 9.99 * user.getWeight() + 6.25 * user.getHeight() - 4.92 * user.getAge() - 161;
         }
+
         switch (user.getActivity()) {
-            case "Минимальная" -> result *= 1.2;
-            case "Слабая" -> result *= 1.375;
-            case "Умеренная" -> result *= 1.55;
-            case "Тяжелая" -> result *= 1.7;
-            case "Экстремальная" -> result *= 1.9;
-            default -> result *= 1;
+            case "Минимальная" -> calories *= 1.2;
+            case "Слабая" -> calories *= 1.375;
+            case "Умеренная" -> calories *= 1.55;
+            case "Тяжелая" -> calories *= 1.7;
+            case "Экстремальная" -> calories *= 1.9;
+            default -> calories *= 1;
         }
         if (user.getGoal().equals("Похудение")) {
-            result *= 0.8;
+            calories *= 0.8;
         }
         if (user.getGoal().equals("Набор массы")) {
-            result *= 1.2;
+            calories *= 1.2;
         }
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(update.getMessage().getChatId().toString());
         sendMessage.setParseMode(ParseMode.HTML);
-        sendMessage.setText(Constants.getFormulaResultMessage((int) result));
+        sendMessage.setText(Constants.getFormulaResultMessage(calories));
         return sendMessage;
     }
 
     public BotApiMethod<?> productReceived(Update update, ProductsController productsController) {
-        String productName = update.getMessage().getText().toLowerCase();
-        if (productName.length() < 3) {
+        if (update.getMessage().getText().length() < 3) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Введите не менее 3-х символов");
         }
-
-        Products product = productsController.getProductByName(update.getMessage().getText());
+        String productInfo = update.getMessage().getText();
+        String[] productInfoSplit;
+        String productName;
+        int grams;
+        if (productInfo.contains(",")) {
+            if (productInfo.contains(", ")) {
+                productInfoSplit = productInfo.split(", ");
+            } else {
+                productInfoSplit = productInfo.split(",");
+            }
+            productName = productInfoSplit[0];
+            try {
+                grams = Integer.parseInt(productInfoSplit[1]);
+            } catch (NumberFormatException exception) {
+                return new SendMessage(update.getMessage().getChatId().toString(), "Введите целое число после запятой");
+            }
+        } else {
+            productName = productInfo;
+            grams = 100;
+        }
+        Products product = productsController.getProductByName(productName);
         if (product != null) {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(update.getMessage().getChatId().toString());
             sendMessage.setParseMode(ParseMode.HTML);
-            sendMessage.setText(Constants.getProductAddedMessage(product));
+            sendMessage.setText(Constants.getProductAddedMessage(product, grams / 100.0));
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-            sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_OR_INFO_BUTTONS, "PRODUCT_INFO" + product.getId() + "/"));
+            sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_OR_MORE_OR_INFO_BUTTONS, "PRODUCT_INFO" + product.getId() + "/" + grams + "/"));
             return sendMessage;
         }
+        productName = productName.toLowerCase();
         List<Products> listOfProducts = productsController.getProductsByName("%" + productName + "%");
         if (listOfProducts.isEmpty()) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Товар не найден");
         }
         List<String> listOfNamesOfProducts = new ArrayList<>();
-        for (Products value : listOfProducts) {
-            String name = value.getProduct();
-            listOfNamesOfProducts.add(name);
+        for (int i = 0; i < listOfProducts.size(); ++i) {
+            String name = listOfProducts.get(i).getProduct();
+            listOfNamesOfProducts.add(name + ", " + grams);
+            if (i > 147) {
+                break;
+            }
         }
         listOfNamesOfProducts.add("Выбрать другой продукт");
         ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();

@@ -16,6 +16,8 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CallbackQueryHandler {
 
@@ -55,12 +57,12 @@ public class CallbackQueryHandler {
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
         if (answer.equals(Constants.YES)) {
             usersController.updateWasRegistered(buttonQuery.getFrom().getId(), "gender");
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                    Constants.WHAT_IS_YOUR_GENDER_QUESTION, inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GENDER_BUTTONS, "GENDER"), false);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_GENDER_QUESTION,
+                    inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GENDER_BUTTONS, "GENDER"), false);
         } else {
             usersController.updateWasRegistered(buttonQuery.getFrom().getId(), "no registration");
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                    "Вы всегда можете дополнить свои данные в разделе \"Изменить данные\"", new InlineKeyboardMarkup(), false);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Вы всегда можете дополнить свои данные в разделе \"Изменить данные\"",
+                    new InlineKeyboardMarkup(), false);
             sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, "Вам доступен основной функционал бота", false));
         }
         return editMessageText;
@@ -70,8 +72,7 @@ public class CallbackQueryHandler {
         long userId = buttonQuery.getFrom().getId();
         usersController.updateWasRegistered(userId, "age");
         usersController.updateGender(userId, answer);
-        return createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                Constants.WHAT_IS_YOUR_AGE_QUESTION, new InlineKeyboardMarkup(), true);
+        return createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_AGE_QUESTION, new InlineKeyboardMarkup(), true);
     }
 
     private BotApiMethod<?> getGoalAnswer(CallbackQuery buttonQuery, String answer, UsersController usersController) {
@@ -79,8 +80,7 @@ public class CallbackQueryHandler {
         usersController.updateWasRegistered(userId, "activity");
         usersController.updateGoal(userId, answer);
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-        return createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                Constants.WHAT_IS_YOUR_ACTIVITY_QUESTION,
+        return createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_ACTIVITY_QUESTION,
                 inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ACTIVITY_BUTTONS, "ACTIVITY"), true);
     }
 
@@ -95,11 +95,10 @@ public class CallbackQueryHandler {
         EditMessageText editMessageText;
         if (answer.equals(Constants.CHANGE)) {
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                    "Что вы хотите изменить?", inlineKeyboardModel.createInlineKeyboardMarkup(Constants.CHANGE_BUTTONS, "CHANGE"), false);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Что вы хотите изменить?",
+                    inlineKeyboardModel.createInlineKeyboardMarkup(Constants.CHANGE_BUTTONS, "CHANGE"), false);
         } else {
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                    "Данные сохранены!", new InlineKeyboardMarkup(), false);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Данные сохранены!", new InlineKeyboardMarkup(), false);
             sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, "Вам доступен основной функционал бота", false));
 
         }
@@ -112,37 +111,37 @@ public class CallbackQueryHandler {
         if (data.endsWith("Пол")) {
             usersController.updateWasRegistered(userId, "change_gender");
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                    Constants.WHAT_IS_YOUR_GENDER_QUESTION, inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GENDER_BUTTONS, "change_GENDER"), false);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_GENDER_QUESTION,
+                    inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GENDER_BUTTONS, "change_GENDER"), false);
         } else if (data.endsWith("Возраст")) {
             usersController.updateWasRegistered(userId, "change_age");
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                    Constants.WHAT_IS_YOUR_AGE_QUESTION, new InlineKeyboardMarkup(), false);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_AGE_QUESTION,
+                    new InlineKeyboardMarkup(), false);
         } else if (data.endsWith("Вес")) {
             usersController.updateWasRegistered(userId, "change_weight");
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                    Constants.WHAT_IS_YOUR_WEIGHT_QUESTION, new InlineKeyboardMarkup(), false);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_WEIGHT_QUESTION,
+                    new InlineKeyboardMarkup(), false);
         } else if (data.endsWith("Рост")) {
             usersController.updateWasRegistered(userId, "change_height");
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                    Constants.WHAT_IS_YOUR_HEIGHT_QUESTION, new InlineKeyboardMarkup(), false);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_HEIGHT_QUESTION,
+                    new InlineKeyboardMarkup(), false);
         } else if (data.endsWith("Цель")) {
             usersController.updateWasRegistered(userId, "change_goal");
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                    Constants.WHAT_IS_YOUR_GOAL_QUESTION, inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GOAL_BUTTONS, "change_GOAL"), false);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_GOAL_QUESTION,
+                    inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GOAL_BUTTONS, "change_GOAL"), false);
         } else if (data.endsWith("Активность")) {
             usersController.updateWasRegistered(userId, "change_activity");
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                    Constants.WHAT_IS_YOUR_ACTIVITY_QUESTION, inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ACTIVITY_BUTTONS, "change_ACTIVITY"), true);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_ACTIVITY_QUESTION,
+                    inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ACTIVITY_BUTTONS, "change_ACTIVITY"), true);
 
         } else {
             usersController.deleteUser(buttonQuery.getFrom().getId());
             usersController.createUser(new Users(buttonQuery.getFrom().getId(), "gender"));
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                    Constants.WHAT_IS_YOUR_GENDER_QUESTION, inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GENDER_BUTTONS, "GENDER"), false);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_GENDER_QUESTION,
+                    inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GENDER_BUTTONS, "GENDER"), false);
         }
         return editMessageText;
     }
@@ -175,24 +174,24 @@ public class CallbackQueryHandler {
             switch (stageOfRegistration) {
                 case "gender" -> {
                     InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-                    editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                            Constants.WHAT_IS_YOUR_GENDER_QUESTION, inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GENDER_BUTTONS, "change_GENDER"), false);
+                    editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_GENDER_QUESTION,
+                            inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GENDER_BUTTONS, "change_GENDER"), false);
                 }
-                case "age" -> editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(),
-                        buttonQuery.getMessage().getMessageId(), Constants.WHAT_IS_YOUR_AGE_QUESTION, new InlineKeyboardMarkup(), false);
-                case "weight" -> editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                        Constants.WHAT_IS_YOUR_WEIGHT_QUESTION, new InlineKeyboardMarkup(), false);
-                case "height" -> editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(),
-                        buttonQuery.getMessage().getMessageId(), Constants.WHAT_IS_YOUR_HEIGHT_QUESTION, new InlineKeyboardMarkup(), false);
+                case "age" -> editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_AGE_QUESTION,
+                        new InlineKeyboardMarkup(), false);
+                case "weight" -> editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_WEIGHT_QUESTION,
+                        new InlineKeyboardMarkup(), false);
+                case "height" -> editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_HEIGHT_QUESTION,
+                        new InlineKeyboardMarkup(), false);
                 case "goal" -> {
                     InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-                    editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                            Constants.WHAT_IS_YOUR_GOAL_QUESTION, inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GOAL_BUTTONS, "change_GOAL"), false);
+                    editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_GOAL_QUESTION,
+                            inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GOAL_BUTTONS, "change_GOAL"), false);
                 }
                 default -> {
                     InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-                    editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                            Constants.WHAT_IS_YOUR_ACTIVITY_QUESTION, inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ACTIVITY_BUTTONS, "change_ACTIVITY"), true);
+                    editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_ACTIVITY_QUESTION,
+                            inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ACTIVITY_BUTTONS, "change_ACTIVITY"), true);
                 }
             }
         } else {
@@ -200,8 +199,8 @@ public class CallbackQueryHandler {
             usersController.deleteUser(userId);
             usersController.createUser(new Users(userId, "no"));
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                    Constants.HelloMessage, inlineKeyboardModel.createInlineKeyboardMarkup(Constants.YES_OR_NO_BUTTONS, "REGISTRATION"), true);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.HelloMessage,
+                    inlineKeyboardModel.createInlineKeyboardMarkup(Constants.YES_OR_NO_BUTTONS, "REGISTRATION"), true);
         }
         return editMessageText;
     }
@@ -209,10 +208,9 @@ public class CallbackQueryHandler {
     private BotApiMethod<?> addProduct(CallbackQuery buttonQuery, String answer, UsersController usersController) {
         EditMessageText editMessageText;
         if (answer.equals("Другой")) {
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                    "Введите продукт", new InlineKeyboardMarkup(), false);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Введите продукт", new InlineKeyboardMarkup(), false);
         } else {
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery,
                     "Еще нет функционала", new InlineKeyboardMarkup(), false);
         }
         return editMessageText;
@@ -222,16 +220,39 @@ public class CallbackQueryHandler {
         EditMessageText editMessageText;
         String[] metadataArray = metadata.split("/");
         int productId = Integer.parseInt(metadataArray[0]);
-        String answer = metadataArray[1];
+        int grams = Integer.parseInt(metadataArray[1]);
+        String answer = metadataArray[2];
         Products product = productsController.getProductById(productId);
         if (answer.equals(Constants.ADD)) {
-            usersController.increaseDailyCalorieIntake(buttonQuery.getFrom().getId(), product.getKilocalories());
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                    Constants.getUserIntakeMessage(usersController.getUserByTelegramId(buttonQuery.getFrom().getId())), new InlineKeyboardMarkup(), true);
+            usersController.increaseDailyIntake(buttonQuery.getFrom().getId(), product, grams);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.getUserIntakeMessage(usersController.getUserByTelegramId(buttonQuery.getFrom().getId())),
+                    new InlineKeyboardMarkup(), true);
             sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, "Продукт был добавлен", false));
+        } else if (answer.equals(Constants.MORE)) {
+            List<Products> listOfProducts = productsController.getProductsByName("%" + product.getProduct().toLowerCase() + "%");
+            if (listOfProducts.isEmpty()) {
+                return new SendMessage(buttonQuery.getMessage().getChatId().toString(), "Товары не найдены");
+            }
+            List<String> listOfNamesOfProducts = new ArrayList<>();
+            for (int i = 0; i < listOfProducts.size(); ++i) {
+                String name = listOfProducts.get(i).getProduct();
+                listOfNamesOfProducts.add(name);
+                if (i > 147) {
+                    break;
+                }
+            }
+            listOfNamesOfProducts.add("Выбрать другой продукт");
+            ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setText("Выберите продукт");
+            sendMessage.setChatId(buttonQuery.getMessage().getChatId());
+            sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfNamesOfProducts, 1, true));
+            sendMessage(bot, sendMessage);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Будут показаны продукты, содержащие: <b>" + product.getProduct() + ".</b>",
+                    new InlineKeyboardMarkup(), true);
         } else {
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                    Constants.getProductAddedMessage(product), new InlineKeyboardMarkup(), true);
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.getProductAddedMessage(product, grams / 100.0),
+                    new InlineKeyboardMarkup(), true);
             sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, Constants.getProductWontBeCountedMessage(usersController.getUserByTelegramId(buttonQuery.getFrom().getId())), true));
         }
         return editMessageText;
@@ -240,15 +261,14 @@ public class CallbackQueryHandler {
     private BotApiMethod<?> createFinalRegistrationMessage(CallbackQuery buttonQuery, UsersController usersController) {
         Users user = usersController.getUserByTelegramId(buttonQuery.getFrom().getId());
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-        return createEditMessageText(buttonQuery.getMessage().getChatId().toString(), buttonQuery.getMessage().getMessageId(),
-                Constants.getIsAllRightMessage(user),
+        return createEditMessageText(buttonQuery, Constants.getIsAllRightMessage(user),
                 inlineKeyboardModel.createInlineKeyboardMarkup(Constants.YES_OR_CHANGE_BUTTONS, "IS_REGISTRATION_CORRECT"), true);
     }
 
-    private BotApiMethod<?> createEditMessageText(String chatId, int messageId, String text, InlineKeyboardMarkup inlineKeyboardMarkup, boolean isParseMode) {
+    private BotApiMethod<?> createEditMessageText(CallbackQuery buttonQuery, String text, InlineKeyboardMarkup inlineKeyboardMarkup, boolean isParseMode) {
         EditMessageText editMessageText = new EditMessageText();
-        editMessageText.setChatId(chatId);
-        editMessageText.setMessageId(messageId);
+        editMessageText.setChatId(buttonQuery.getMessage().getChatId().toString());
+        editMessageText.setMessageId(buttonQuery.getMessage().getMessageId());
         if (isParseMode) {
             editMessageText.setParseMode(ParseMode.HTML);
         }

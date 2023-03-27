@@ -9,6 +9,7 @@ public class Constants {
     public static final String YES = "Да ✅";
     public static final String CHANGE = "Изменить ⚙️";
     public static final String ADD = "Добавить ✅";
+    public static final String MORE = "Еще товары \uD83C\uDF55";
     public static final String HelloMessage = """
             @CalorieTrackingBot позволяет отслеживать потребленные за день калории и собирать статистику.
                                 
@@ -45,7 +46,7 @@ public class Constants {
             "Цель", "Активность", "Пройти регистрацию заново"});
     public static final List<String> FINAL_KEYBOARD = List.of(new String[]{"\uD83C\uDF54 Добавить продукт",
             "\uD83D\uDCA7 Добавить стакан", " \uD83D\uDCCA Статистика", "⚙️ Изменить данные", "❓Помощь", "\uD83C\uDF71 Моя норма"});
-    public static final List<String> ADD_OR_INFO_BUTTONS = List.of(new String[]{"Добавить ✅", "Не добавлять ❌"});
+    public static final List<String> ADD_OR_MORE_OR_INFO_BUTTONS = List.of(new String[]{"Добавить ✅", "Еще товары \uD83C\uDF55", "Не добавлять ❌"});
 
     public static String getIsAllRightMessage(Users user) {
         return "Ваши данные изменены." +
@@ -67,22 +68,31 @@ public class Constants {
                 "</b>\nВаша активность <b>: " + user.getActivity() + "</b>";
     }
 
-    public static String getFormulaResultMessage(int result) {
+    public static String getFormulaResultMessage(double calories) {
         return "Результат был рассчитан по формуле " +
                 "Миффлина — Сан-Жеора с учетом вашей активности и цели похудения.\n\n" +
-                "Ваша норма ежедневного потребления: <b>" + result + " ккал</b>.";
+                "Ваша норма ежедневного потребления: " +
+                "\nКкал: <b>" + (int) calories + "</b>" +
+                "\nБелки: <b>" + (int) (calories * 0.3 / 4) + "г</b>" +
+                "\nЖиры: <b>" + (int) (calories * 0.3 / 9) + "г</b>" +
+                "\nУглероды: <b>" + (int) (calories * 0.4 / 4) + "г</b>";
     }
 
-    public static String getProductAddedMessage(Products product) {
-        return product.getProduct() +
-                "\n\nКкал: <b>" + product.getKilocalories() +
-                "</b>\nБелки: <b>" + product.getProteins() +
-                "</b>\nЖиры: <b>" + product.getFats() +
-                "</b>\nУглеводы: <b>" + product.getCarbohydrates() + "</b>";
+    public static String getProductAddedMessage(Products product, double coefficient) {
+        return product.getProduct() + ", " + (int) (coefficient * 100) + " грамм." +
+                "\n\nКкал: <b>" + product.getKilocalories() * coefficient +
+                "</b>\nБелки: <b>" + product.getProteins() * coefficient +
+                "</b>\nЖиры: <b>" + product.getFats() * coefficient +
+                "</b>\nУглеводы: <b>" + product.getCarbohydrates() * coefficient + "</b>";
     }
 
     public static String getUserIntakeMessage(Users user) {
-        return "Потреблено калорий: <b>" + user.getDailyCalorieIntake() + "</b>.";
+        return "Потреблено за день:\n" +
+                "Ккал: <b>" + user.getDailyCalorieIntake() + "</b>.\n" +
+                "Белков: <b>" + user.getDailyProteinsIntake() + "</b>.\n" +
+                "Жиров: <b>" + user.getDailyFatsIntake() + "</b>.\n" +
+                "Углеводов: <b>" + user.getDailyCarbohydratesIntake() + "</b>.\n" +
+                "Выпито стаканов воды: <b>" + user.getGlassesOfWater() + "</b>.";
     }
 
     public static String getProductWontBeCountedMessage(Users user) {

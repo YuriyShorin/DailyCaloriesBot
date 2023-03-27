@@ -9,12 +9,17 @@ import org.springframework.stereotype.Component;
 @EnableScheduling
 @Component
 public class Schedule {
+
+    private final UsersController usersController;
+
     @Autowired
-    UsersController usersController;
+    public Schedule(UsersController usersController) {
+        this.usersController = usersController;
+    }
 
     @Scheduled(cron = "0 0 0 * * *")
     private void ResetDailyFieldsInDatabase() {
-        usersController.zeroGlassesOfWaterAndDailyCalorieIntakeForAllUsers();
+        usersController.zeroGlassesOfWaterAndDailyIntakeForAllUsers();
     }
 }
 

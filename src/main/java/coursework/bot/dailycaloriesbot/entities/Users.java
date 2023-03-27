@@ -34,6 +34,16 @@ public class Users {
     @Column(name = "daily_calorie_intake")
     private double dailyCalorieIntake;
 
+    @Column(name = "daily_proteins_intake")
+    private double dailyProteinsIntake;
+
+    @Column(name = "daily_fats_intake")
+    private double dailyFatsIntake;
+
+    @Column(name = "daily_carbohydrates_intake")
+    private double dailyCarbohydratesIntake;
+
+
     protected Users() {
     }
 

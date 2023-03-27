@@ -11,8 +11,12 @@ import java.util.Optional;
 @RestController
 public class ProductsController {
 
+    private final ProductsRepository productsRepository;
+
     @Autowired
-    ProductsRepository productsRepository;
+    public ProductsController(ProductsRepository productsRepository) {
+        this.productsRepository = productsRepository;
+    }
 
     public Products getProductById(int id) {
         Optional<Products> usersData = productsRepository.findById(id);

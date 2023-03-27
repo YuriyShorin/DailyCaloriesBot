@@ -16,7 +16,7 @@ public class DailyCaloriesBot extends SpringWebhookBot {
     String botPath;
     String botUsername;
     String botToken;
-    private TelegramFacade telegramFacade;
+    TelegramFacade telegramFacade;
 
     public DailyCaloriesBot(TelegramFacade telegramFacade, SetWebhook setWebhook) {
         super(setWebhook);
