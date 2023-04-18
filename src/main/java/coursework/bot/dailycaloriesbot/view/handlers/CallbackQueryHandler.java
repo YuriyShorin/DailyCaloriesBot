@@ -16,7 +16,9 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CallbackQueryHandler {
@@ -44,7 +46,7 @@ public class CallbackQueryHandler {
         } else if (data.startsWith("WAS_REGISTRATION_CONTINUED")) {
             return continueRegistration(buttonQuery, data.substring(26), usersController);
         } else if (data.startsWith("ADD_PRODUCT")) {
-            return addProduct(buttonQuery, data.substring(11), usersController);
+            return addProduct(buttonQuery, data.substring(11));
         } else if (data.startsWith("PRODUCT_INFO")) {
             return productInfo(buttonQuery, data.substring(12), usersController, productsController, bot);
         } else {
@@ -169,7 +171,8 @@ public class CallbackQueryHandler {
 
     private BotApiMethod<?> continueRegistration(CallbackQuery buttonQuery, String answer, UsersController usersController) {
         EditMessageText editMessageText;
-        String stageOfRegistration = usersController.getUserByTelegramId(buttonQuery.getFrom().getId()).getWasRegistered();
+        String stageOfRegistration = usersController.getUserByTelegramId(buttonQuery.getFrom().getId())
+                .getWasRegistered();
         if (answer.equals(Constants.YES)) {
             switch (stageOfRegistration) {
                 case "gender" -> {
@@ -177,12 +180,15 @@ public class CallbackQueryHandler {
                     editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_GENDER_QUESTION,
                             inlineKeyboardModel.createInlineKeyboardMarkup(Constants.GENDER_BUTTONS, "change_GENDER"), false);
                 }
-                case "age" -> editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_AGE_QUESTION,
-                        new InlineKeyboardMarkup(), false);
-                case "weight" -> editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_WEIGHT_QUESTION,
-                        new InlineKeyboardMarkup(), false);
-                case "height" -> editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_HEIGHT_QUESTION,
-                        new InlineKeyboardMarkup(), false);
+                case "age" ->
+                        editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_AGE_QUESTION,
+                                new InlineKeyboardMarkup(), false);
+                case "weight" ->
+                        editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_WEIGHT_QUESTION,
+                                new InlineKeyboardMarkup(), false);
+                case "height" ->
+                        editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_HEIGHT_QUESTION,
+                                new InlineKeyboardMarkup(), false);
                 case "goal" -> {
                     InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
                     editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_GOAL_QUESTION,
@@ -205,7 +211,7 @@ public class CallbackQueryHandler {
         return editMessageText;
     }
 
-    private BotApiMethod<?> addProduct(CallbackQuery buttonQuery, String answer, UsersController usersController) {
+    private BotApiMethod<?> addProduct(CallbackQuery buttonQuery, String answer) {
         EditMessageText editMessageText;
         if (answer.equals("Другой")) {
             editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Введите продукт", new InlineKeyboardMarkup(), false);
@@ -219,41 +225,92 @@ public class CallbackQueryHandler {
     private BotApiMethod<?> productInfo(CallbackQuery buttonQuery, String metadata, UsersController usersController, ProductsController productsController, DailyCaloriesBot bot) {
         EditMessageText editMessageText;
         String[] metadataArray = metadata.split("/");
+        System.out.println(Arrays.toString(metadataArray));
         int productId = Integer.parseInt(metadataArray[0]);
         int grams = Integer.parseInt(metadataArray[1]);
         String answer = metadataArray[2];
         Products product = productsController.getProductById(productId);
         if (answer.equals(Constants.ADD)) {
             usersController.increaseDailyIntake(buttonQuery.getFrom().getId(), product, grams);
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.getUserIntakeMessage(usersController.getUserByTelegramId(buttonQuery.getFrom().getId())),
+            usersController.removeUsersPreviousPage(buttonQuery.getFrom().getId());
+            usersController.removeUsersNextPage(buttonQuery.getFrom().getId());
+            usersController.removeUsersLastProduct(buttonQuery.getFrom().getId());
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.getUserIntakeMessage(usersController.getUserByTelegramId(buttonQuery.getFrom()
+                            .getId())),
                     new InlineKeyboardMarkup(), true);
             sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, "Продукт был добавлен", false));
         } else if (answer.equals(Constants.MORE)) {
-            List<Products> listOfProducts = productsController.getProductsByName("%" + product.getProduct().toLowerCase() + "%");
+            List<Products> listOfProducts;
+            if (usersController.getUsersLastProduct(buttonQuery.getFrom().getId()) == null) {
+                listOfProducts = productsController.getProductsByName("%" + product.getProduct()
+                        .toLowerCase() + "%");
+                usersController.putUsersLastProduct(buttonQuery.getFrom().getId(), product.getProduct());
+            } else {
+                listOfProducts = productsController.getProductsByName("%" + usersController.getUsersLastProduct(buttonQuery.getFrom().getId())
+                        .toLowerCase() + "%");
+            }
+
             if (listOfProducts.isEmpty()) {
                 return new SendMessage(buttonQuery.getMessage().getChatId().toString(), "Товары не найдены");
-            }
-            List<String> listOfNamesOfProducts = new ArrayList<>();
-            for (int i = 0; i < listOfProducts.size(); ++i) {
-                String name = listOfProducts.get(i).getProduct();
-                listOfNamesOfProducts.add(name);
-                if (i > 147) {
-                    break;
+            } else if (listOfProducts.size() >= 100) {
+                int middle = listOfProducts.size() / 2;
+                List<String> listOfNamesOfProductsFirstPart = new ArrayList<>();
+                List<String> listOfNamesOfProductsSecondPart = new ArrayList<>();
+
+                listOfNamesOfProductsFirstPart.add("Далее ---->");
+                for (int i = 0; i < middle; i++) {
+                    String name = listOfProducts.get(i).getProduct();
+                    listOfNamesOfProductsFirstPart.add(name + ", " + grams);
                 }
+                listOfNamesOfProductsFirstPart.add("Выбрать другой продукт");
+                listOfNamesOfProductsFirstPart.add("Далее ---->");
+
+                usersController.putUsersPreviousPage(buttonQuery.getFrom().getId(), listOfNamesOfProductsFirstPart);
+
+                listOfNamesOfProductsSecondPart.add("<---- Назад");
+                for (int i = middle; i < listOfProducts.size(); i++) {
+                    String name = listOfProducts.get(i).getProduct();
+                    listOfNamesOfProductsSecondPart.add(name + ", " + grams);
+                }
+                listOfNamesOfProductsSecondPart.add("Выбрать другой продукт");
+                listOfNamesOfProductsSecondPart.add("<---- Назад");
+                usersController.putUsersNextPage(buttonQuery.getFrom().getId(), listOfNamesOfProductsSecondPart);
+
+                ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setText("Выберите продукт");
+                sendMessage.setChatId(buttonQuery.getFrom().getId());
+                sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfNamesOfProductsFirstPart, 1, true));
+                sendMessage(bot, sendMessage);
+            } else {
+                List<String> listOfNamesOfProducts = new ArrayList<>();
+                for (Products listOfProduct : listOfProducts) {
+                    String name = listOfProduct.getProduct();
+                    listOfNamesOfProducts.add(name);
+                }
+                listOfNamesOfProducts.add("Выбрать другой продукт");
+                ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setText("Выберите продукт");
+                sendMessage.setChatId(buttonQuery.getMessage().getChatId());
+                sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfNamesOfProducts, 1, true));
+                sendMessage(bot, sendMessage);
             }
-            listOfNamesOfProducts.add("Выбрать другой продукт");
-            ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setText("Выберите продукт");
-            sendMessage.setChatId(buttonQuery.getMessage().getChatId());
-            sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfNamesOfProducts, 1, true));
-            sendMessage(bot, sendMessage);
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Будут показаны продукты, содержащие: <b>" + product.getProduct() + ".</b>",
-                    new InlineKeyboardMarkup(), true);
+            if (usersController.getUsersLastProduct(buttonQuery.getFrom().getId()) == null) {
+                editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Будут показаны продукты, содержащие: <b>" + product.getProduct() + ".</b>",
+                        new InlineKeyboardMarkup(), true);
+            } else {
+                editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Будут показаны продукты, содержащие: <b>" + usersController.getUsersLastProduct(buttonQuery.getFrom().getId()) + ".</b>",
+                        new InlineKeyboardMarkup(), true);
+            }
         } else {
+            usersController.removeUsersPreviousPage(buttonQuery.getFrom().getId());
+            usersController.removeUsersNextPage(buttonQuery.getFrom().getId());
+            usersController.removeUsersLastProduct(buttonQuery.getFrom().getId());
             editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.getProductAddedMessage(product, grams / 100.0),
                     new InlineKeyboardMarkup(), true);
-            sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, Constants.getProductWontBeCountedMessage(usersController.getUserByTelegramId(buttonQuery.getFrom().getId())), true));
+            sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, Constants.getProductWontBeCountedMessage(usersController.getUserByTelegramId(buttonQuery.getFrom()
+                    .getId())), true));
         }
         return editMessageText;
     }

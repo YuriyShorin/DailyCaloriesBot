@@ -5,12 +5,21 @@ import coursework.bot.dailycaloriesbot.entities.Users;
 import coursework.bot.dailycaloriesbot.repositories.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
 public class UsersController {
 
     private final UsersRepository usersRepository;
+
+    private final Map<Long, List<String>> usersPreviousPage = new HashMap<>();
+    private final Map<Long, List<String>> usersNextPage = new HashMap<>();
+
+    private final Map<Long, String> usersLastProduct = new HashMap<>();
 
     @Autowired
     public UsersController(UsersRepository usersRepository) {
@@ -126,5 +135,41 @@ public class UsersController {
 
     public void deleteUser(long telegramId) {
         usersRepository.deleteById(telegramId);
+    }
+
+    public Map<Long, List<String>> getUsersPreviousPage() {
+        return usersPreviousPage;
+    }
+
+    public void putUsersPreviousPage(Long id, List<String> page) {
+        this.usersPreviousPage.put(id, page);
+    }
+
+    public Map<Long, List<String>> getUsersNextPage() {
+        return usersNextPage;
+    }
+
+    public void putUsersNextPage(Long id, List<String> page) {
+        this.usersNextPage.put(id, page);
+    }
+
+    public void removeUsersNextPage(Long id) {
+        usersNextPage.remove(id);
+    }
+
+    public void removeUsersPreviousPage(Long id) {
+        usersPreviousPage.remove(id);
+    }
+
+    public String getUsersLastProduct(long userId) {
+        return usersLastProduct.get(userId);
+    }
+
+    public void putUsersLastProduct(Long userId, String product) {
+        usersLastProduct.put(userId, product);
+    }
+
+    public void removeUsersLastProduct(Long userId) {
+        usersLastProduct.remove(userId);
     }
 }

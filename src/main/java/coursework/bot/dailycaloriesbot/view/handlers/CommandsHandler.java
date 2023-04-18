@@ -14,8 +14,10 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class CommandsHandler {
 
@@ -204,7 +206,7 @@ public class CommandsHandler {
         return sendMessage;
     }
 
-    public BotApiMethod<?> productReceived(Update update, ProductsController productsController) {
+    public BotApiMethod<?> productReceived(Update update, UsersController usersController, ProductsController productsController) {
         if (update.getMessage().getText().length() < 3) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Введите не менее 3-х символов");
         }
@@ -230,6 +232,14 @@ public class CommandsHandler {
         }
         Products product = productsController.getProductByName(productName);
         if (product != null) {
+            if (usersController.getUsersLastProduct(update.getMessage().getFrom().getId()) != null) {
+                if (!usersController.getUsersLastProduct(update.getMessage().getFrom().getId()).equals(productName)
+                        && !productName.toLowerCase()
+                        .contains(usersController.getUsersLastProduct(update.getMessage().getFrom().getId())
+                                .toLowerCase())) {
+                    usersController.putUsersLastProduct(update.getMessage().getFrom().getId(), productName);
+                }
+            }
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(update.getMessage().getChatId().toString());
             sendMessage.setParseMode(ParseMode.HTML);
@@ -238,18 +248,47 @@ public class CommandsHandler {
             sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_OR_MORE_OR_INFO_BUTTONS, "PRODUCT_INFO" + product.getId() + "/" + grams + "/"));
             return sendMessage;
         }
+        usersController.putUsersLastProduct(update.getMessage().getFrom().getId(), productName);
         productName = productName.toLowerCase();
         List<Products> listOfProducts = productsController.getProductsByName("%" + productName + "%");
         if (listOfProducts.isEmpty()) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Товар не найден");
-        }
-        List<String> listOfNamesOfProducts = new ArrayList<>();
-        for (int i = 0; i < listOfProducts.size(); ++i) {
-            String name = listOfProducts.get(i).getProduct();
-            listOfNamesOfProducts.add(name + ", " + grams);
-            if (i > 147) {
-                break;
+        } else if (listOfProducts.size() >= 100) {
+            int middle = listOfProducts.size() / 2;
+            List<String> listOfNamesOfProductsFirstPart = new ArrayList<>();
+            List<String> listOfNamesOfProductsSecondPart = new ArrayList<>();
+
+            listOfNamesOfProductsFirstPart.add("Далее ---->");
+            for (int i = 0; i < middle; i++) {
+                String name = listOfProducts.get(i).getProduct();
+                listOfNamesOfProductsFirstPart.add(name + ", " + grams);
             }
+            listOfNamesOfProductsFirstPart.add("Выбрать другой продукт");
+            listOfNamesOfProductsFirstPart.add("Далее ---->");
+
+            usersController.putUsersPreviousPage(update.getMessage().getFrom().getId(), listOfNamesOfProductsFirstPart);
+
+            listOfNamesOfProductsSecondPart.add("<---- Назад");
+            for (int i = middle; i < listOfProducts.size(); i++) {
+                String name = listOfProducts.get(i).getProduct();
+                listOfNamesOfProductsSecondPart.add(name + ", " + grams);
+            }
+            listOfNamesOfProductsSecondPart.add("Выбрать другой продукт");
+            listOfNamesOfProductsSecondPart.add("<---- Назад");
+            usersController.putUsersNextPage(update.getMessage().getFrom().getId(), listOfNamesOfProductsSecondPart);
+
+            ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setText("Выберите продукт");
+            sendMessage.setChatId(update.getMessage().getChatId());
+            sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfNamesOfProductsFirstPart, 1, true));
+            return sendMessage;
+        }
+
+        List<String> listOfNamesOfProducts = new ArrayList<>();
+        for (Products listOfProduct : listOfProducts) {
+            String name = listOfProduct.getProduct();
+            listOfNamesOfProducts.add(name + ", " + grams);
         }
         listOfNamesOfProducts.add("Выбрать другой продукт");
         ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
@@ -293,4 +332,27 @@ public class CommandsHandler {
     public BotApiMethod<?> findAnotherProductCommandReceived(Update update) {
         return new SendMessage(update.getMessage().getFrom().getId().toString(), "Введите продукт");
     }
+
+    public BotApiMethod<?> nextListOfProductsCommandReceived(Update update, UsersController usersController) {
+        Map<Long, List<String>> page = usersController.getUsersNextPage();
+        List<String> listOfNamesOfProducts = page.get(update.getMessage().getFrom().getId());
+        ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setText("Выберите продукт");
+        sendMessage.setChatId(update.getMessage().getChatId());
+        sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfNamesOfProducts, 1, true));
+        return sendMessage;
+    }
+
+    public BotApiMethod<?> previousListOfProductsCommandReceived(Update update, UsersController usersController) {
+        Map<Long, List<String>> page = usersController.getUsersPreviousPage();
+        List<String> listOfNamesOfProducts = page.get(update.getMessage().getFrom().getId());
+        ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setText("Выберите продукт");
+        sendMessage.setChatId(update.getMessage().getChatId());
+        sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfNamesOfProducts, 1, true));
+        return sendMessage;
+    }
+
 }

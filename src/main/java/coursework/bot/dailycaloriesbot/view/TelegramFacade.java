@@ -78,7 +78,9 @@ public class TelegramFacade {
             case "❓Помощь" -> commandsHandler.getHelpCommandReceived(update, usersController);
             case "\uD83C\uDF71 Моя норма" -> commandsHandler.getNormCommandReceived(update, usersController);
             case "Выбрать другой продукт" -> commandsHandler.findAnotherProductCommandReceived(update);
-            default -> commandsHandler.productReceived(update, productsController);
+            case "Далее ---->" -> commandsHandler.nextListOfProductsCommandReceived(update, usersController);
+            case "<---- Назад" -> commandsHandler.previousListOfProductsCommandReceived(update,usersController);
+            default -> commandsHandler.productReceived(update,usersController, productsController);
         };
     }
 }
