@@ -1,8 +1,10 @@
 package coursework.bot.dailycaloriesbot.view;
 
 import coursework.bot.dailycaloriesbot.controllers.ProductsController;
-import coursework.bot.dailycaloriesbot.controllers.UsersController;
-import coursework.bot.dailycaloriesbot.entities.Users;
+import coursework.bot.dailycaloriesbot.controllers.UsersFavouritesController;
+import coursework.bot.dailycaloriesbot.controllers.UsersRegistrationDataController;
+import coursework.bot.dailycaloriesbot.controllers.UsersStatisticsController;
+import coursework.bot.dailycaloriesbot.entities.UsersRegistrationData;
 import coursework.bot.dailycaloriesbot.view.handlers.CallbackQueryHandler;
 import coursework.bot.dailycaloriesbot.view.handlers.CommandsHandler;
 import lombok.AccessLevel;
@@ -13,31 +15,35 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-
 @Component
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TelegramFacade {
 
-    final UsersController usersController;
-    final ProductsController productsController;
+    private final UsersRegistrationDataController usersRegistrationDataController;
+    private final UsersStatisticsController usersStatisticsController;
+    private final ProductsController productsController;
+    private final UsersFavouritesController usersFavouritesController;
+
 
     @Autowired
-    public TelegramFacade(UsersController usersController, ProductsController productsController) {
-        this.usersController = usersController;
+    public TelegramFacade(UsersRegistrationDataController usersRegistrationDataController, ProductsController productsController, UsersStatisticsController usersStatisticsController, UsersFavouritesController usersFavouritesController) {
+        this.usersRegistrationDataController = usersRegistrationDataController;
+        this.usersStatisticsController = usersStatisticsController;
         this.productsController = productsController;
+        this.usersFavouritesController = usersFavouritesController;
     }
 
     public BotApiMethod<?> handleUpdate(Update update, DailyCaloriesBot bot) { // получен update от Telegram
         if (update.hasCallbackQuery()) {
             CallbackQueryHandler callbackQueryHandler = new CallbackQueryHandler();
-            return callbackQueryHandler.processCallBackQuery(update.getCallbackQuery(), usersController, productsController, bot);
+            return callbackQueryHandler.processCallBackQuery(update.getCallbackQuery(), usersRegistrationDataController, usersStatisticsController, usersFavouritesController, productsController, bot);
         }
         if (update.hasMessage() && update.getMessage().hasText()) { // если получено сообщение
             String messageText = update.getMessage().getText();
             if (messageText.equals("/start")) { // получена команда начать
                 return processCommand(update, messageText);
             }
-            Users user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
+            UsersRegistrationData user = usersRegistrationDataController.getUserByTelegramId(update.getMessage().getFrom().getId());
             if (user == null) {
                 return null;
             }
@@ -63,24 +69,31 @@ public class TelegramFacade {
         }
         return switch (command) {
             case "/start" ->
-                    commandsHandler.startCommandReceived(update, usersController); // если получена команда /start
-            case "age" -> commandsHandler.ageCommandReceived(update, usersController);
-            case "weight" -> commandsHandler.weightCommandReceived(update, usersController);
-            case "height" -> commandsHandler.heightCommandReceived(update, usersController);
-            case "change_age" -> commandsHandler.changeAgeCommandReceived(update, usersController);
-            case "change_height" -> commandsHandler.changeHeightCommandReceived(update, usersController);
-            case "change_weight" -> commandsHandler.changeWeightCommandReceived(update, usersController);
+                    commandsHandler.startCommandReceived(update, usersRegistrationDataController); // если получена команда /start
+            case "age" -> commandsHandler.ageCommandReceived(update, usersRegistrationDataController);
+            case "weight" -> commandsHandler.weightCommandReceived(update, usersRegistrationDataController);
+            case "height" -> commandsHandler.heightCommandReceived(update, usersRegistrationDataController);
+            case "change_age" -> commandsHandler.changeAgeCommandReceived(update, usersRegistrationDataController);
+            case "change_height" ->
+                    commandsHandler.changeHeightCommandReceived(update, usersRegistrationDataController);
+            case "change_weight" ->
+                    commandsHandler.changeWeightCommandReceived(update, usersRegistrationDataController);
             case "\uD83C\uDF54 Добавить продукт" -> commandsHandler.addProductCommandReceived(update);
             case "\uD83D\uDCA7 Добавить стакан" ->
-                    commandsHandler.addGlassOfWaterCommandReceived(update, usersController);
-            case "\uD83D\uDCCA Статистика" -> commandsHandler.getStatisticsCommandReceived(update, usersController);
-            case "⚙️ Изменить данные" -> commandsHandler.changeDataCommandReceived(update, usersController);
-            case "❓Помощь" -> commandsHandler.getHelpCommandReceived(update, usersController);
-            case "\uD83C\uDF71 Моя норма" -> commandsHandler.getNormCommandReceived(update, usersController);
+                    commandsHandler.addGlassOfWaterCommandReceived(update, usersStatisticsController);
+            case "\uD83D\uDCCA Статистика" -> commandsHandler.getStatisticsCommandReceived(update);
+            case "⚙️ Изменить данные" ->
+                    commandsHandler.changeDataCommandReceived(update, usersRegistrationDataController);
+            case "❓Помощь" -> commandsHandler.getHelpCommandReceived(update);
+            case "\uD83C\uDF71 Моя норма" ->
+                    commandsHandler.getNormCommandReceived(update, usersRegistrationDataController);
             case "Выбрать другой продукт" -> commandsHandler.findAnotherProductCommandReceived(update);
-            case "Далее ---->" -> commandsHandler.nextListOfProductsCommandReceived(update, usersController);
-            case "<---- Назад" -> commandsHandler.previousListOfProductsCommandReceived(update,usersController);
-            default -> commandsHandler.productReceived(update,usersController, productsController);
+            case "Далее ➡️" ->
+                    commandsHandler.nextListOfProductsCommandReceived(update, usersRegistrationDataController);
+            case "⬅️ Назад" ->
+                    commandsHandler.previousListOfProductsCommandReceived(update, usersRegistrationDataController);
+            default ->
+                    commandsHandler.productReceived(update, usersRegistrationDataController, productsController, usersFavouritesController);
         };
     }
 }

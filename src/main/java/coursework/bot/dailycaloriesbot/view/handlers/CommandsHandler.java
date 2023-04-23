@@ -2,9 +2,12 @@ package coursework.bot.dailycaloriesbot.view.handlers;
 
 import coursework.bot.dailycaloriesbot.constants.Constants;
 import coursework.bot.dailycaloriesbot.controllers.ProductsController;
-import coursework.bot.dailycaloriesbot.controllers.UsersController;
+import coursework.bot.dailycaloriesbot.controllers.UsersFavouritesController;
+import coursework.bot.dailycaloriesbot.controllers.UsersRegistrationDataController;
+import coursework.bot.dailycaloriesbot.controllers.UsersStatisticsController;
+import coursework.bot.dailycaloriesbot.entities.Favourites;
 import coursework.bot.dailycaloriesbot.entities.Products;
-import coursework.bot.dailycaloriesbot.entities.Users;
+import coursework.bot.dailycaloriesbot.entities.UsersRegistrationData;
 import coursework.bot.dailycaloriesbot.utills.NumbersUtil;
 import coursework.bot.dailycaloriesbot.view.keyboards.InlineKeyboardModel;
 import coursework.bot.dailycaloriesbot.view.keyboards.ReplyKeyboardModel;
@@ -21,13 +24,13 @@ import java.util.Map;
 
 public class CommandsHandler {
 
-    public BotApiMethod<?> startCommandReceived(Update update, UsersController usersController) { // обработчик команды /start
-        Users user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
+    public BotApiMethod<?> startCommandReceived(Update update, UsersRegistrationDataController usersController) { // обработчик команды /start
+        UsersRegistrationData user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
         SendMessage sendMessage;
         if (user == null) {
             sendMessage = createRegistrationYesOrNoMessage(Constants.HelloMessage, "REGISTRATION", update.getMessage()
                     .getChatId().toString());
-            usersController.createUser(new Users(update.getMessage().getFrom().getId(), "no"));
+            usersController.createUser(new UsersRegistrationData(update.getMessage().getFrom().getId(), "no"));
         } else if (user.getWasRegistered().equals("no")) {
             sendMessage = createRegistrationYesOrNoMessage(Constants.HelloMessage, "REGISTRATION", update.getMessage()
                     .getChatId().toString());
@@ -43,7 +46,7 @@ public class CommandsHandler {
         return sendMessage;
     }
 
-    public BotApiMethod<?> ageCommandReceived(Update update, UsersController usersController) {
+    public BotApiMethod<?> ageCommandReceived(Update update, UsersRegistrationDataController usersController) {
         String messageText = update.getMessage().getText();
         Integer age = NumbersUtil.parseInt(messageText);
         if (age == null) {
@@ -58,7 +61,7 @@ public class CommandsHandler {
         return new SendMessage(update.getMessage().getChatId().toString(), Constants.WHAT_IS_YOUR_WEIGHT_QUESTION);
     }
 
-    public BotApiMethod<?> weightCommandReceived(Update update, UsersController usersController) {
+    public BotApiMethod<?> weightCommandReceived(Update update, UsersRegistrationDataController usersController) {
         String messageText = update.getMessage().getText();
         Double weight = NumbersUtil.parseDouble(messageText);
         if (weight == null) {
@@ -74,7 +77,7 @@ public class CommandsHandler {
         return new SendMessage(update.getMessage().getChatId().toString(), Constants.WHAT_IS_YOUR_HEIGHT_QUESTION);
     }
 
-    public BotApiMethod<?> heightCommandReceived(Update update, UsersController usersController) {
+    public BotApiMethod<?> heightCommandReceived(Update update, UsersRegistrationDataController usersController) {
         String messageText = update.getMessage().getText();
         Double height = NumbersUtil.parseDouble(messageText);
         if (height == null) {
@@ -94,7 +97,7 @@ public class CommandsHandler {
         return sendMessage;
     }
 
-    public BotApiMethod<?> changeAgeCommandReceived(Update update, UsersController usersController) {
+    public BotApiMethod<?> changeAgeCommandReceived(Update update, UsersRegistrationDataController usersController) {
         String messageText = update.getMessage().getText();
         Integer age = NumbersUtil.parseInt(messageText);
         if (age == null) {
@@ -108,7 +111,7 @@ public class CommandsHandler {
         return createFinalRegistrationMessage(userId, usersController);
     }
 
-    public BotApiMethod<?> changeWeightCommandReceived(Update update, UsersController usersController) {
+    public BotApiMethod<?> changeWeightCommandReceived(Update update, UsersRegistrationDataController usersController) {
         String messageText = update.getMessage().getText();
         Double weight = NumbersUtil.parseDouble(messageText);
         if (weight == null) {
@@ -123,7 +126,7 @@ public class CommandsHandler {
         return createFinalRegistrationMessage(userId, usersController);
     }
 
-    public BotApiMethod<?> changeHeightCommandReceived(Update update, UsersController usersController) {
+    public BotApiMethod<?> changeHeightCommandReceived(Update update, UsersRegistrationDataController usersController) {
         String messageText = update.getMessage().getText();
         Double height = NumbersUtil.parseDouble(messageText);
         if (height == null) {
@@ -140,24 +143,27 @@ public class CommandsHandler {
 
     public BotApiMethod<?> addProductCommandReceived(Update update) {
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Выберите продукт");
-        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(List.of("продукты", "Другой"), "ADD_PRODUCT"));
+        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Выберите:");
+        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_PRODUCT_BUTTON, "ADD_PRODUCT"));
         return sendMessage;
     }
 
-    public BotApiMethod<?> addGlassOfWaterCommandReceived(Update update, UsersController usersController) {
+    public BotApiMethod<?> addGlassOfWaterCommandReceived(Update update, UsersStatisticsController usersController) {
         long userId = update.getMessage().getFrom().getId();
         usersController.incrementGlassesOfWater(userId);
         return new SendMessage(String.valueOf(userId), "За день было выпито: " + usersController.getUserByTelegramId(userId)
-                .getGlassesOfWater());
+                .getDailyGlassesOfWater());
     }
 
-    public BotApiMethod<?> getStatisticsCommandReceived(Update update, UsersController usersController) {
-        return new SendMessage(update.getMessage().getChatId().toString(), "getStatisticsCommandReceived");
+    public BotApiMethod<?> getStatisticsCommandReceived(Update update) {
+        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Какую статистику вы бы хотели узнать?");
+        InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
+        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.STATS_BUTTONS, "STATS"));
+        return sendMessage;
     }
 
-    public BotApiMethod<?> changeDataCommandReceived(Update update, UsersController usersController) {
-        Users user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
+    public BotApiMethod<?> changeDataCommandReceived(Update update, UsersRegistrationDataController usersController) {
+        UsersRegistrationData user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(update.getMessage().getFrom().getId().toString());
         sendMessage.setParseMode(ParseMode.HTML);
@@ -167,12 +173,12 @@ public class CommandsHandler {
         return sendMessage;
     }
 
-    public BotApiMethod<?> getHelpCommandReceived(Update update, UsersController usersController) {
+    public BotApiMethod<?> getHelpCommandReceived(Update update) {
         return new SendMessage(update.getMessage().getChatId().toString(), "getHelpCommandReceived");
     }
 
-    public BotApiMethod<?> getNormCommandReceived(Update update, UsersController usersController) {
-        Users user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
+    public BotApiMethod<?> getNormCommandReceived(Update update, UsersRegistrationDataController usersController) {
+        UsersRegistrationData user = usersController.getUserByTelegramId(update.getMessage().getFrom().getId());
         if (user.getGender() == null || user.getAge() == 0 || user.getWeight() == 0 ||
                 user.getHeight() == 0 || user.getGoal() == null || user.getActivity() == null) {
             return new SendMessage(update.getMessage().getChatId()
@@ -206,7 +212,7 @@ public class CommandsHandler {
         return sendMessage;
     }
 
-    public BotApiMethod<?> productReceived(Update update, UsersController usersController, ProductsController productsController) {
+    public BotApiMethod<?> productReceived(Update update, UsersRegistrationDataController usersController, ProductsController productsController, UsersFavouritesController usersFavouritesController) {
         if (update.getMessage().getText().length() < 3) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Введите не менее 3-х символов");
         }
@@ -231,13 +237,14 @@ public class CommandsHandler {
             grams = 100;
         }
         Products product = productsController.getProductByName(productName);
+        long userId = update.getMessage().getFrom().getId();
         if (product != null) {
-            if (usersController.getUsersLastProduct(update.getMessage().getFrom().getId()) != null) {
+            if (usersController.getUsersLastProduct(userId) != null) {
                 if (!usersController.getUsersLastProduct(update.getMessage().getFrom().getId()).equals(productName)
                         && !productName.toLowerCase()
-                        .contains(usersController.getUsersLastProduct(update.getMessage().getFrom().getId())
+                        .contains(usersController.getUsersLastProduct(userId)
                                 .toLowerCase())) {
-                    usersController.putUsersLastProduct(update.getMessage().getFrom().getId(), productName);
+                    usersController.putUsersLastProduct(userId, productName);
                 }
             }
             SendMessage sendMessage = new SendMessage();
@@ -245,7 +252,11 @@ public class CommandsHandler {
             sendMessage.setParseMode(ParseMode.HTML);
             sendMessage.setText(Constants.getProductAddedMessage(product, grams / 100.0));
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-            sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_OR_MORE_OR_INFO_BUTTONS, "PRODUCT_INFO" + product.getId() + "/" + grams + "/"));
+            if (usersFavouritesController.getFavourites(userId).contains(new Favourites(product.getProduct()))) {
+                sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_PRODUCT_WITH_DELETE_FROM_FAVOURITES_BUTTONS, "PRODUCT_INFO" + product.getId() + "/" + grams + "/"));
+            } else {
+                sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_PRODUCT_WITH_ADD_TO_FAVOURITES_BUTTONS, "PRODUCT_INFO" + product.getId() + "/" + grams + "/"));
+            }
             return sendMessage;
         }
         usersController.putUsersLastProduct(update.getMessage().getFrom().getId(), productName);
@@ -254,37 +265,8 @@ public class CommandsHandler {
         if (listOfProducts.isEmpty()) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Товар не найден");
         } else if (listOfProducts.size() >= 100) {
-            int middle = listOfProducts.size() / 2;
-            List<String> listOfNamesOfProductsFirstPart = new ArrayList<>();
-            List<String> listOfNamesOfProductsSecondPart = new ArrayList<>();
-
-            listOfNamesOfProductsFirstPart.add("Далее ---->");
-            for (int i = 0; i < middle; i++) {
-                String name = listOfProducts.get(i).getProduct();
-                listOfNamesOfProductsFirstPart.add(name + ", " + grams);
-            }
-            listOfNamesOfProductsFirstPart.add("Выбрать другой продукт");
-            listOfNamesOfProductsFirstPart.add("Далее ---->");
-
-            usersController.putUsersPreviousPage(update.getMessage().getFrom().getId(), listOfNamesOfProductsFirstPart);
-
-            listOfNamesOfProductsSecondPart.add("<---- Назад");
-            for (int i = middle; i < listOfProducts.size(); i++) {
-                String name = listOfProducts.get(i).getProduct();
-                listOfNamesOfProductsSecondPart.add(name + ", " + grams);
-            }
-            listOfNamesOfProductsSecondPart.add("Выбрать другой продукт");
-            listOfNamesOfProductsSecondPart.add("<---- Назад");
-            usersController.putUsersNextPage(update.getMessage().getFrom().getId(), listOfNamesOfProductsSecondPart);
-
-            ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setText("Выберите продукт");
-            sendMessage.setChatId(update.getMessage().getChatId());
-            sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfNamesOfProductsFirstPart, 1, true));
-            return sendMessage;
+            return fulfilUserPages(listOfProducts, usersController, update.getMessage().getFrom().getId(), update.getMessage().getChatId(), grams);
         }
-
         List<String> listOfNamesOfProducts = new ArrayList<>();
         for (Products listOfProduct : listOfProducts) {
             String name = listOfProduct.getProduct();
@@ -306,9 +288,9 @@ public class CommandsHandler {
         return null;
     }
 
-    private BotApiMethod<?> createFinalRegistrationMessage(long userId, UsersController usersController) {
+    private BotApiMethod<?> createFinalRegistrationMessage(long userId, UsersRegistrationDataController usersController) {
         usersController.updateWasRegistered(userId, "yes");
-        Users user = usersController.getUserByTelegramId(userId);
+        UsersRegistrationData user = usersController.getUserByTelegramId(userId);
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(String.valueOf(userId));
         sendMessage.setParseMode(ParseMode.HTML);
@@ -333,8 +315,15 @@ public class CommandsHandler {
         return new SendMessage(update.getMessage().getFrom().getId().toString(), "Введите продукт");
     }
 
-    public BotApiMethod<?> nextListOfProductsCommandReceived(Update update, UsersController usersController) {
-        Map<Long, List<String>> page = usersController.getUsersNextPage();
+    public BotApiMethod<?> nextListOfProductsCommandReceived(Update update, UsersRegistrationDataController usersController) {
+        return getListOfProducts(usersController.getUsersNextPage(), update);
+    }
+
+    public BotApiMethod<?> previousListOfProductsCommandReceived(Update update, UsersRegistrationDataController usersController) {
+        return getListOfProducts(usersController.getUsersPreviousPage(), update);
+    }
+
+    public BotApiMethod<?> getListOfProducts(Map<Long, List<String>> page, Update update) {
         List<String> listOfNamesOfProducts = page.get(update.getMessage().getFrom().getId());
         ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
         SendMessage sendMessage = new SendMessage();
@@ -344,15 +333,31 @@ public class CommandsHandler {
         return sendMessage;
     }
 
-    public BotApiMethod<?> previousListOfProductsCommandReceived(Update update, UsersController usersController) {
-        Map<Long, List<String>> page = usersController.getUsersPreviousPage();
-        List<String> listOfNamesOfProducts = page.get(update.getMessage().getFrom().getId());
+    protected static SendMessage fulfilUserPages(List<Products> listOfProducts, UsersRegistrationDataController usersController, long userId, long chatId, int grams) {
+        int middle = listOfProducts.size() / 2;
+        List<String> listOfNamesOfProductsFirstPart = new ArrayList<>();
+        List<String> listOfNamesOfProductsSecondPart = new ArrayList<>();
+        listOfNamesOfProductsFirstPart.add("Далее ➡️");
+        for (int i = 0; i < middle; i++) {
+            String name = listOfProducts.get(i).getProduct();
+            listOfNamesOfProductsFirstPart.add(name + ", " + grams);
+        }
+        listOfNamesOfProductsFirstPart.add("Выбрать другой продукт");
+        listOfNamesOfProductsFirstPart.add("Далее ➡️");
+        usersController.putUsersPreviousPage(userId, listOfNamesOfProductsFirstPart);
+        listOfNamesOfProductsSecondPart.add("⬅️ Назад");
+        for (int i = middle; i < listOfProducts.size(); i++) {
+            String name = listOfProducts.get(i).getProduct();
+            listOfNamesOfProductsSecondPart.add(name + ", " + grams);
+        }
+        listOfNamesOfProductsSecondPart.add("Выбрать другой продукт");
+        listOfNamesOfProductsSecondPart.add("⬅️ Назад");
+        usersController.putUsersNextPage(userId, listOfNamesOfProductsSecondPart);
         ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
         SendMessage sendMessage = new SendMessage();
         sendMessage.setText("Выберите продукт");
-        sendMessage.setChatId(update.getMessage().getChatId());
-        sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfNamesOfProducts, 1, true));
+        sendMessage.setChatId(chatId);
+        sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfNamesOfProductsFirstPart, 1, true));
         return sendMessage;
     }
-
 }

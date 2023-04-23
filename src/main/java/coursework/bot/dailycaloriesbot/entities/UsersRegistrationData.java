@@ -5,10 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "Users")
+@Table(name = "users_registration_data")
 @Getter
 @Setter
-public class Users {
+public class UsersRegistrationData {
     @Id
     @Column(name = "telegram_id")
     private Long telegramId;
@@ -24,30 +24,13 @@ public class Users {
     private double height;
     @Column(name = "goal")
     private String goal;
-
     @Column(name = "activity")
     private String activity;
 
-    @Column(name = "glasses_of_water")
-    private int glassesOfWater;
-
-    @Column(name = "daily_calorie_intake")
-    private double dailyCalorieIntake;
-
-    @Column(name = "daily_proteins_intake")
-    private double dailyProteinsIntake;
-
-    @Column(name = "daily_fats_intake")
-    private double dailyFatsIntake;
-
-    @Column(name = "daily_carbohydrates_intake")
-    private double dailyCarbohydratesIntake;
-
-
-    protected Users() {
+    protected UsersRegistrationData() {
     }
 
-    public Users(Long telegramId, String wasRegistered) {
+    public UsersRegistrationData(Long telegramId, String wasRegistered) {
         this.telegramId = telegramId;
         this.wasRegistered = wasRegistered;
     }
