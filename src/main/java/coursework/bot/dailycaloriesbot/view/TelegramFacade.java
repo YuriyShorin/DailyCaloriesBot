@@ -1,9 +1,6 @@
 package coursework.bot.dailycaloriesbot.view;
 
-import coursework.bot.dailycaloriesbot.controllers.ProductsController;
-import coursework.bot.dailycaloriesbot.controllers.UsersFavouritesController;
-import coursework.bot.dailycaloriesbot.controllers.UsersRegistrationDataController;
-import coursework.bot.dailycaloriesbot.controllers.UsersStatisticsController;
+import coursework.bot.dailycaloriesbot.controllers.*;
 import coursework.bot.dailycaloriesbot.entities.UsersRegistrationData;
 import coursework.bot.dailycaloriesbot.view.handlers.CallbackQueryHandler;
 import coursework.bot.dailycaloriesbot.view.handlers.CommandsHandler;
@@ -24,26 +21,33 @@ public class TelegramFacade {
     private final ProductsController productsController;
     private final UsersFavouritesController usersFavouritesController;
 
+    private final UsersRecentController usersRecentController;
 
     @Autowired
-    public TelegramFacade(UsersRegistrationDataController usersRegistrationDataController, ProductsController productsController, UsersStatisticsController usersStatisticsController, UsersFavouritesController usersFavouritesController) {
+    public TelegramFacade(UsersRegistrationDataController usersRegistrationDataController, ProductsController productsController, UsersStatisticsController usersStatisticsController, UsersFavouritesController usersFavouritesController, UsersRecentController usersRecentController) {
         this.usersRegistrationDataController = usersRegistrationDataController;
         this.usersStatisticsController = usersStatisticsController;
         this.productsController = productsController;
         this.usersFavouritesController = usersFavouritesController;
+        this.usersRecentController = usersRecentController;
     }
 
     public BotApiMethod<?> handleUpdate(Update update, DailyCaloriesBot bot) { // получен update от Telegram
+//        if (update.hasCallbackQuery() || update.hasMessage()) {
+//            System.out.println(update);
+//            return null;
+//        }
         if (update.hasCallbackQuery()) {
             CallbackQueryHandler callbackQueryHandler = new CallbackQueryHandler();
-            return callbackQueryHandler.processCallBackQuery(update.getCallbackQuery(), usersRegistrationDataController, usersStatisticsController, usersFavouritesController, productsController, bot);
+            return callbackQueryHandler.processCallBackQuery(update.getCallbackQuery(), usersRegistrationDataController, usersStatisticsController, usersFavouritesController, usersRecentController, productsController, bot);
         }
         if (update.hasMessage() && update.getMessage().hasText()) { // если получено сообщение
             String messageText = update.getMessage().getText();
             if (messageText.equals("/start")) { // получена команда начать
                 return processCommand(update, messageText);
             }
-            UsersRegistrationData user = usersRegistrationDataController.getUserByTelegramId(update.getMessage().getFrom().getId());
+            UsersRegistrationData user = usersRegistrationDataController.getUserByTelegramId(update.getMessage()
+                    .getFrom().getId());
             if (user == null) {
                 return null;
             }

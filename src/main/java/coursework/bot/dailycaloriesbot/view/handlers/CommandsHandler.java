@@ -156,7 +156,8 @@ public class CommandsHandler {
     }
 
     public BotApiMethod<?> getStatisticsCommandReceived(Update update) {
-        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Какую статистику вы бы хотели узнать?");
+        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId()
+                .toString(), "Какую статистику вы бы хотели узнать?");
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
         sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.STATS_BUTTONS, "STATS"));
         return sendMessage;
@@ -252,9 +253,13 @@ public class CommandsHandler {
             sendMessage.setParseMode(ParseMode.HTML);
             sendMessage.setText(Constants.getProductAddedMessage(product, grams / 100.0));
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-            if (usersFavouritesController.getFavourites(userId).contains(new Favourites(product.getProduct()))) {
-                sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_PRODUCT_WITH_DELETE_FROM_FAVOURITES_BUTTONS, "PRODUCT_INFO" + product.getId() + "/" + grams + "/"));
-            } else {
+            try {
+                if (usersFavouritesController.getFavourites(userId).contains(new Favourites(product.getProduct()))) {
+                    sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_PRODUCT_WITH_DELETE_FROM_FAVOURITES_BUTTONS, "PRODUCT_INFO" + product.getId() + "/" + grams + "/"));
+                } else {
+                    sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_PRODUCT_WITH_ADD_TO_FAVOURITES_BUTTONS, "PRODUCT_INFO" + product.getId() + "/" + grams + "/"));
+                }
+            } catch (NullPointerException e) {
                 sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_PRODUCT_WITH_ADD_TO_FAVOURITES_BUTTONS, "PRODUCT_INFO" + product.getId() + "/" + grams + "/"));
             }
             return sendMessage;
@@ -265,7 +270,8 @@ public class CommandsHandler {
         if (listOfProducts.isEmpty()) {
             return new SendMessage(update.getMessage().getChatId().toString(), "Товар не найден");
         } else if (listOfProducts.size() >= 100) {
-            return fulfilUserPages(listOfProducts, usersController, update.getMessage().getFrom().getId(), update.getMessage().getChatId(), grams);
+            return fulfilUserPages(listOfProducts, usersController, update.getMessage().getFrom()
+                    .getId(), update.getMessage().getChatId(), grams);
         }
         List<String> listOfNamesOfProducts = new ArrayList<>();
         for (Products listOfProduct : listOfProducts) {

@@ -1,9 +1,7 @@
 package coursework.bot.dailycaloriesbot.controllers;
 
-import coursework.bot.dailycaloriesbot.entities.UsersRegistrationData;
-import coursework.bot.dailycaloriesbot.entities.UsersStatistics;
-import coursework.bot.dailycaloriesbot.repositories.UsersRegistrationDataRepository;
-import coursework.bot.dailycaloriesbot.repositories.UsersStatisticsRepository;
+import coursework.bot.dailycaloriesbot.entities.*;
+import coursework.bot.dailycaloriesbot.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,14 +15,20 @@ public class UsersRegistrationDataController {
 
     private final UsersRegistrationDataRepository usersRegistrationDataRepository;
     private final UsersStatisticsRepository usersStatisticsRepository;
+
+    private final UsersFavouritesRepository usersFavouritesRepository;
+
+    private final UsersRecentRepository usersRecentRepository;
     private final Map<Long, List<String>> usersPreviousPage = new HashMap<>();
     private final Map<Long, List<String>> usersNextPage = new HashMap<>();
     private final Map<Long, String> usersLastProduct = new HashMap<>();
 
     @Autowired
-    public UsersRegistrationDataController(UsersRegistrationDataRepository usersRegistrationDataRepository, UsersStatisticsRepository usersStatisticsRepository) {
+    public UsersRegistrationDataController(UsersRegistrationDataRepository usersRegistrationDataRepository, UsersStatisticsRepository usersStatisticsRepository, UsersFavouritesRepository usersFavouritesRepository, UsersRecentRepository usersRecentRepository) {
         this.usersRegistrationDataRepository = usersRegistrationDataRepository;
         this.usersStatisticsRepository = usersStatisticsRepository;
+        this.usersFavouritesRepository = usersFavouritesRepository;
+        this.usersRecentRepository = usersRecentRepository;
     }
 
     public UsersRegistrationData getUserByTelegramId(long telegramId) {
@@ -35,6 +39,8 @@ public class UsersRegistrationDataController {
     public void createUser(UsersRegistrationData user) {
         usersRegistrationDataRepository.save(new UsersRegistrationData(user.getTelegramId(), user.getWasRegistered()));
         usersStatisticsRepository.save(new UsersStatistics(user.getTelegramId()));
+        usersFavouritesRepository.save(new UsersFavourites(user.getTelegramId()));
+        usersRecentRepository.save(new UsersRecent(user.getTelegramId()));
     }
 
     public void updateWasRegistered(long id, String wasRegistered) {
