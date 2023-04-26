@@ -254,7 +254,7 @@ public class CommandsHandler {
             sendMessage.setText(Constants.getProductAddedMessage(product, grams / 100.0));
             InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
             try {
-                if (usersFavouritesController.getFavourites(userId).contains(new Favourites(product.getProduct()))) {
+                if (usersFavouritesController.getFavourites(userId).contains(new Favourites(userId, product.getProduct()))) {
                     sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_PRODUCT_WITH_DELETE_FROM_FAVOURITES_BUTTONS, "PRODUCT_INFO" + product.getId() + "/" + grams + "/"));
                 } else {
                     sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_PRODUCT_WITH_ADD_TO_FAVOURITES_BUTTONS, "PRODUCT_INFO" + product.getId() + "/" + grams + "/"));

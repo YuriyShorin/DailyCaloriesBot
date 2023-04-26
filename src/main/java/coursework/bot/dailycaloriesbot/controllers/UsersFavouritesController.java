@@ -44,7 +44,7 @@ public class UsersFavouritesController {
             usersFavourites = usersData.get();
         }
         Set<Favourites> favourites = usersFavourites.getFavourites();
-        favourites.add(new Favourites(product));
+        favourites.add(new Favourites(telegramId, product));
         usersFavouritesRepository.save(usersFavourites);
         return true;
     }
@@ -56,8 +56,8 @@ public class UsersFavouritesController {
         }
         UsersFavourites usersFavourites = usersData.get();
         Set<Favourites> favourites = usersFavourites.getFavourites();
-        favourites.remove(new Favourites(product));
-        Optional<Favourites> favourite = favouritesRepository.findByProduct(product);
+        favourites.remove(new Favourites(telegramId, product));
+        Optional<Favourites> favourite = favouritesRepository.findByTelegramIdAndProduct(telegramId, product);
         favourite.ifPresent(value -> favouritesRepository.deleteById(value.getId()));
         usersFavouritesRepository.save(usersFavourites);
     }

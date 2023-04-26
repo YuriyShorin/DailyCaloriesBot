@@ -17,27 +17,30 @@ public class Recent {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "telegram_id")
+    private Long telegramId;
+
     @Column(name = "product")
     private String product;
-
 
     protected Recent() {
     }
 
-    public Recent(String product) {
+    public Recent(Long telegramId, String product) {
+        this.telegramId = telegramId;
         this.product = product;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(product);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Recent that = (Recent) o;
-        return product.equals(that.product);
+        Recent recent = (Recent) o;
+        return telegramId.equals(recent.telegramId) && product.equals(recent.product);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(telegramId, product);
     }
 }

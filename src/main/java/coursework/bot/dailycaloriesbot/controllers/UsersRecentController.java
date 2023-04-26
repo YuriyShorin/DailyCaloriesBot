@@ -44,15 +44,14 @@ public class UsersRecentController {
             usersRecent = userData.get();
         }
         List<Recent> recentList = usersRecent.getRecentList();
-//        System.out.println(recentList);
-        if (recentList.contains(new Recent(product))) {
+        if (recentList.contains(new Recent(telegramId, product))) {
             deleteRecent(telegramId, product);
-            recentList.add(new Recent(product));
+            recentList.add(new Recent(telegramId, product));
         } else if (recentList.size() >= 15) {
             deleteRecent(telegramId, recentList.get(0).getProduct());
-            recentList.add(new Recent(product));
+            recentList.add(new Recent(telegramId, product));
         } else {
-            recentList.add(new Recent(product));
+            recentList.add(new Recent(telegramId, product));
         }
         usersRecentRepository.save(usersRecent);
         return true;
@@ -65,8 +64,8 @@ public class UsersRecentController {
         }
         UsersRecent usersRecent = userData.get();
         List<Recent> recentList = usersRecent.getRecentList();
-        recentList.remove(new Recent(product));
-        Optional<Recent> recent = recentRepository.findByProduct(product);
+        recentList.remove(new Recent(telegramId, product));
+        Optional<Recent> recent = recentRepository.findByTelegramIdAndProduct(telegramId, product);
         recent.ifPresent(value -> recentRepository.deleteById(value.getId()));
         usersRecentRepository.save(usersRecent);
     }

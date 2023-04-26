@@ -16,13 +16,17 @@ public class Favourites {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
+
+    @Column(name = "telegram_id")
+    private Long telegramId;
     @Column(name = "product")
     private String product;
 
     protected Favourites() {
     }
 
-    public Favourites(String product) {
+    public Favourites(Long telegramId, String product) {
+        this.telegramId = telegramId;
         this.product = product;
     }
 
@@ -31,11 +35,11 @@ public class Favourites {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Favourites that = (Favourites) o;
-        return product.equals(that.product);
+        return telegramId.equals(that.telegramId) && product.equals(that.product);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(product);
+        return Objects.hash(telegramId, product);
     }
 }

@@ -8,5 +8,5 @@ import java.util.Optional;
 
 public interface FavouritesRepository extends CrudRepository<Favourites, Long> {
 
-    Optional<Favourites> findByProduct(String product);
+    Optional<Favourites> findByTelegramIdAndProduct(Long telegramId, String product);
 }
