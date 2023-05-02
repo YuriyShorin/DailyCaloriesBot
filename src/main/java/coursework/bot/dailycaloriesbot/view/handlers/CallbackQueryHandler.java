@@ -11,6 +11,10 @@ import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.inlinequery.InlineQuery;
+import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent;
+import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ForceReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -212,7 +216,8 @@ public class CallbackQueryHandler {
     private BotApiMethod<?> addProduct(CallbackQuery buttonQuery, String answer, UsersFavouritesController usersFavouritesController, UsersRecentController usersRecentController, DailyCaloriesBot bot) {
         EditMessageText editMessageText;
         if (answer.equals(Constants.FAVOURITES)) {
-            UsersFavourites usersFavourites = usersFavouritesController.getUserFavouritesByTelegramId(buttonQuery.getFrom().getId());
+            UsersFavourites usersFavourites = usersFavouritesController.getUserFavouritesByTelegramId(buttonQuery.getFrom()
+                    .getId());
             if (!usersFavourites.getFavourites().isEmpty()) {
                 List<Favourites> favorites = new ArrayList<>(usersFavourites.getFavourites());
                 List<String> products = new ArrayList<>();
@@ -329,7 +334,8 @@ public class CallbackQueryHandler {
                     editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Продукт не был добавлен в избранное",
                             new InlineKeyboardMarkup(), false);
                 }
-            } else if (usersFavouritesController.addFavourite(buttonQuery.getFrom().getId(), product.getProduct() + ", " + grams)) {
+            } else if (usersFavouritesController.addFavourite(buttonQuery.getFrom()
+                    .getId(), product.getProduct() + ", " + grams)) {
                 editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Продукт был добавлен в избранное",
                         new InlineKeyboardMarkup(), false);
             } else {
@@ -347,6 +353,19 @@ public class CallbackQueryHandler {
                     new InlineKeyboardMarkup(), true);
             sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, Constants.getNumberOfProductsInFavouritesMessage(usersFavouritesController.getUserFavouritesByTelegramId(buttonQuery.getFrom()
                     .getId())), true));
+        } else if (answer.equals(Constants.CHANGE_GRAMS)) {
+            SendMessage sendMessage = new SendMessage(buttonQuery.getMessage().getChatId().toString(), product.getProduct());
+            ForceReplyKeyboard forceReplyKeyboard = new ForceReplyKeyboard();
+            if (product.getProduct().length() > 49) {
+                forceReplyKeyboard.setInputFieldPlaceholder("Яблоко, (число грамм)");
+            } else {
+                forceReplyKeyboard.setInputFieldPlaceholder(product.getProduct() + ", (число грамм)");
+
+            }
+            sendMessage.setReplyMarkup(forceReplyKeyboard);
+            sendMessage(bot, sendMessage);
+            sendMessage(bot, new SendMessage(buttonQuery.getMessage().getChatId().toString(), "Вставьте продукт с нужным количеством грамм.\nНапример:\n" + product.getProduct() + ", (число грамм)"));
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Вы хотите изменить граммовку данного продукта:", new InlineKeyboardMarkup(), false);
         } else {
             usersController.removeUsersPreviousPage(buttonQuery.getFrom().getId());
             usersController.removeUsersNextPage(buttonQuery.getFrom().getId());

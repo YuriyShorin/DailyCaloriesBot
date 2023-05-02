@@ -11,6 +11,8 @@ public class Constants {
 
     public static final String YES = "Да ✅";
     public static final String CHANGE = "Изменить ⚙️";
+
+    public static final String CHANGE_GRAMS = "Изменить граммовку";
     public static final String ADD = "Добавить ✅";
     public static final String MORE = "Еще товары \uD83C\uDF55";
     public static final String FAVOURITES = "Избранное ⭐️";
@@ -56,9 +58,9 @@ public class Constants {
             "\uD83D\uDCA7 Добавить стакан", " \uD83D\uDCCA Статистика", "⚙️ Изменить данные", "❓Помощь", "\uD83C\uDF71 Моя норма"});
     public static List<String> ADD_PRODUCT_BUTTON = List.of(new String[]{"Избранное ⭐️", "Недавние \uD83D\uDDD3️", "Отменить ❌"});
     public static final List<String> ADD_PRODUCT_WITH_ADD_TO_FAVOURITES_BUTTONS = List.of(new String[]{"Добавить ✅",
-            "Еще товары \uD83C\uDF55", "В избранное ⭐️", "Не добавлять ❌"});
+            "Еще товары \uD83C\uDF55", "В избранное ⭐️", "Изменить граммовку", "Не добавлять ❌"});
     public static final List<String> ADD_PRODUCT_WITH_DELETE_FROM_FAVOURITES_BUTTONS = List.of(new String[]{"Добавить ✅",
-            "Еще товары \uD83C\uDF55", "Удалить из избранного", "Не добавлять ❌"});
+            "Еще товары \uD83C\uDF55", "Удалить из избранного", "Изменить граммовку", "Не добавлять ❌"});
 
 
     public static String getIsAllRightMessage(UsersRegistrationData user) {
