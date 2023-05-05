@@ -60,6 +60,7 @@ public class TelegramFacade {
                 case "change_age" -> processCommand(update, "change_age");
                 case "change_height" -> processCommand(update, "change_height");
                 case "change_weight" -> processCommand(update, "change_weight");
+                case "weight_tracking" -> processCommand(update, "weight_tracking");
                 default -> null;
             };
         }
@@ -82,6 +83,8 @@ public class TelegramFacade {
                     commandsHandler.changeHeightCommandReceived(update, usersRegistrationDataController);
             case "change_weight" ->
                     commandsHandler.changeWeightCommandReceived(update, usersRegistrationDataController);
+            case "weight_tracking" ->
+                    commandsHandler.changeWeightTrackingCommandReceived(update, usersRegistrationDataController);
             case "\uD83C\uDF54 Добавить продукт" -> commandsHandler.addProductCommandReceived(update);
             case "\uD83D\uDCA7 Добавить стакан" ->
                     commandsHandler.addGlassOfWaterCommandReceived(update, usersStatisticsController);

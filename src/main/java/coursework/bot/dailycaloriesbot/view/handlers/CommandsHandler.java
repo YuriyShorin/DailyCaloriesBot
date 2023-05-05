@@ -126,6 +126,27 @@ public class CommandsHandler {
         return createFinalRegistrationMessage(userId, usersController);
     }
 
+    public BotApiMethod<?> changeWeightTrackingCommandReceived(Update update, UsersRegistrationDataController usersController) {
+        String messageText = update.getMessage().getText();
+        Double weight = NumbersUtil.parseDouble(messageText);
+        if (weight == null) {
+            return new SendMessage(update.getMessage().getChatId()
+                    .toString(), "Вес должен быть целым или дробным числом");
+        }
+        if (!NumbersUtil.checkWeight(weight)) {
+            return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный вес: " + weight);
+        }
+        long userId = update.getMessage().getFrom().getId();
+        double oldWeight = usersController.getUserByTelegramId(userId).getWeight();
+        usersController.updateWeight(userId, weight);
+        usersController.updateWasRegistered(userId, "yes");
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(update.getMessage().getChatId());
+        sendMessage.setText("Ваш вес изменился с " + oldWeight + "(кг) до " + weight +"(кг)");
+        sendMessage.setReplyMarkup(new ReplyKeyboardModel().getReplyKeyboardMarkup(Constants.FINAL_KEYBOARD,2, false));
+        return sendMessage;
+    }
+
     public BotApiMethod<?> changeHeightCommandReceived(Update update, UsersRegistrationDataController usersController) {
         String messageText = update.getMessage().getText();
         Double height = NumbersUtil.parseDouble(messageText);

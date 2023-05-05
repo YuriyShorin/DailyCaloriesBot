@@ -46,6 +46,8 @@ public class Constants {
             <b>Экстремальная</b> - занятия спортом с почти ежедневным графиком и несколькими тренировками в течение дня или очень трудоемкая работа.""";
     public static final List<String> YES_OR_NO_BUTTONS = List.of(new String[]{"Да ✅", "Нет ❌"});
     public static final List<String> YES_OR_CHANGE_BUTTONS = List.of(new String[]{"Да ✅", "Изменить ⚙️"});
+
+    public static final List<String> NO_OR_CHANGE_BUTTONS_WEIGHT_TRACKING = List.of(new String[]{"Изменить ⚙️", "Оставить ✅"});
     public static final List<String> SAVE_OR_CHANGE_BUTTONS = List.of(new String[]{"Сохранить ✅", "Изменить ⚙️"});
     public static final List<String> GENDER_BUTTONS = List.of(new String[]{"Мужчина \uD83D\uDC71\u200D♂️", "Женщина \uD83D\uDC71\u200D♀️"});
     public static final List<String> GOAL_BUTTONS = List.of(new String[]{"Похудение", "Поддержание веса", "Набор массы"});
@@ -81,6 +83,10 @@ public class Constants {
                 "</b>\nВаш рост: <b>" + user.getHeight() +
                 "</b>\nВаша цель: <b>" + user.getGoal() +
                 "</b>\nВаша активность <b>: " + user.getActivity() + "</b>";
+    }
+
+    public static String getWeightDataMessage(UsersRegistrationData user) {
+        return "Ваш вес: <b>" + user.getWeight() + "</b> (кг)";
     }
 
     public static String getFormulaResultMessage(double calories) {

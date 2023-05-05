@@ -11,9 +11,6 @@ import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.inlinequery.InlineQuery;
-import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent;
-import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ForceReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -51,9 +48,24 @@ public class CallbackQueryHandler {
             return productInfo(buttonQuery, data.substring(12), usersController, usersStatisticsController, usersFavouritesController, usersRecentController, productsController, bot);
         } else if (data.startsWith("STATS")) {
             return statistics(buttonQuery, data.substring(5), usersStatisticsController);
+        } else if (data.startsWith("WEIGHT_TRACKING")) {
+            return weightTracking(buttonQuery, data.substring(15), usersController, bot);
         } else {
             return null;
         }
+    }
+
+    private BotApiMethod<?> weightTracking(CallbackQuery buttonQuery, String answer, UsersRegistrationDataController usersController, DailyCaloriesBot bot) {
+        EditMessageText editMessageText;
+        if (answer.equals(Constants.CHANGE)) {
+            usersController.updateWasRegistered(buttonQuery.getFrom().getId(), "weight_tracking");
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.WHAT_IS_YOUR_WEIGHT_QUESTION,
+                    new InlineKeyboardMarkup(), false);
+        } else {
+            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Данные сохранены!", new InlineKeyboardMarkup(), false);
+            sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, "Вам доступен основной функционал бота", false));
+        }
+        return editMessageText;
     }
 
     private BotApiMethod<?> getRegistrationAnswer(CallbackQuery buttonQuery, String answer, UsersRegistrationDataController usersController, DailyCaloriesBot bot) {
