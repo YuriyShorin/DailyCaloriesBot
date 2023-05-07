@@ -55,7 +55,7 @@ public class Constants {
             "Умеренная", "Тяжелая", "Экстремальная"});
     public static final List<String> CHANGE_BUTTONS = List.of(new String[]{"Пол", "Возраст", "Вес", "Рост",
             "Цель", "Активность", "Пройти регистрацию заново"});
-    public static final List<String> STATS_BUTTONS = List.of(new String[]{"День", "Неделя", "Месяц", "За все время", "Вся статистика"});
+    public static final List<String> STATS_BUTTONS = List.of(new String[]{"День", "Неделя", "Месяц", "За все время", "Вся статистика", "Отслеживание веса"});
     public static final List<String> FINAL_KEYBOARD = List.of(new String[]{"\uD83C\uDF54 Добавить продукт",
             "\uD83D\uDCA7 Добавить стакан", " \uD83D\uDCCA Статистика", "⚙️ Изменить данные", "❓Помощь", "\uD83C\uDF71 Моя норма"});
     public static List<String> ADD_PRODUCT_BUTTON = List.of(new String[]{"Избранное ⭐️", "Недавние \uD83D\uDDD3️", "Отменить ❌"});
@@ -178,5 +178,10 @@ public class Constants {
             return "В избранном максимальное число продуктов: <b>20</b>";
         }
         return "Количество продуктов в избранном: <b>" + favourites.size() + "</b>";
+    }
+
+    public static String getUserWeightChange(UsersStatistics user, double currentWeight) {
+        double startWeight = user.getStartWeight();
+        return "Сначала использования данного бота ваш вес изменился с <b>" + startWeight + "</b> (кг) до <b>" + currentWeight +"</b> (кг)";
     }
 }

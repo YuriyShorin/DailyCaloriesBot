@@ -4,12 +4,14 @@ import coursework.bot.dailycaloriesbot.constants.Constants;
 import coursework.bot.dailycaloriesbot.entities.Products;
 import coursework.bot.dailycaloriesbot.entities.UsersRegistrationData;
 import coursework.bot.dailycaloriesbot.entities.UsersStatistics;
+import coursework.bot.dailycaloriesbot.repositories.UsersRegistrationDataRepository;
 import coursework.bot.dailycaloriesbot.repositories.UsersStatisticsRepository;
 import coursework.bot.dailycaloriesbot.view.keyboards.InlineKeyboardModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
 import java.util.List;
@@ -119,6 +121,15 @@ public class UsersStatisticsController {
             user.setMonthlyProteinsIntake(0);
             user.setMonthlyFatsIntake(0);
             user.setMonthlyCarbohydratesIntake(0);
+            usersStatisticsRepository.save(user);
+        }
+    }
+
+    public void updateStartWeight(long id, double weight) {
+        Optional<UsersStatistics> usersData = usersStatisticsRepository.findById(id);
+        if (usersData.isPresent()) {
+            UsersStatistics user = usersData.get();
+            user.setStartWeight(weight);
             usersStatisticsRepository.save(user);
         }
     }

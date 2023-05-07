@@ -47,7 +47,7 @@ public class CallbackQueryHandler {
         } else if (data.startsWith("PRODUCT_INFO")) {
             return productInfo(buttonQuery, data.substring(12), usersController, usersStatisticsController, usersFavouritesController, usersRecentController, productsController, bot);
         } else if (data.startsWith("STATS")) {
-            return statistics(buttonQuery, data.substring(5), usersStatisticsController);
+            return statistics(buttonQuery, data.substring(5), usersStatisticsController, usersController);
         } else if (data.startsWith("WEIGHT_TRACKING")) {
             return weightTracking(buttonQuery, data.substring(15), usersController, bot);
         } else {
@@ -366,7 +366,8 @@ public class CallbackQueryHandler {
             sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, Constants.getNumberOfProductsInFavouritesMessage(usersFavouritesController.getUserFavouritesByTelegramId(buttonQuery.getFrom()
                     .getId())), true));
         } else if (answer.equals(Constants.CHANGE_GRAMS)) {
-            SendMessage sendMessage = new SendMessage(buttonQuery.getMessage().getChatId().toString(), product.getProduct());
+            SendMessage sendMessage = new SendMessage(buttonQuery.getMessage().getChatId()
+                    .toString(), product.getProduct());
             ForceReplyKeyboard forceReplyKeyboard = new ForceReplyKeyboard();
             if (product.getProduct().length() > 49) {
                 forceReplyKeyboard.setInputFieldPlaceholder("Яблоко, (число грамм)");
@@ -376,7 +377,8 @@ public class CallbackQueryHandler {
             }
             sendMessage.setReplyMarkup(forceReplyKeyboard);
             sendMessage(bot, sendMessage);
-            sendMessage(bot, new SendMessage(buttonQuery.getMessage().getChatId().toString(), "Вставьте продукт с нужным количеством грамм.\nНапример:\n" + product.getProduct() + ", (число грамм)"));
+            sendMessage(bot, new SendMessage(buttonQuery.getMessage().getChatId()
+                    .toString(), "Вставьте продукт с нужным количеством грамм.\nНапример:\n" + product.getProduct() + ", (число грамм)"));
             editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Вы хотите изменить граммовку данного продукта:", new InlineKeyboardMarkup(), false);
         } else {
             usersController.removeUsersPreviousPage(buttonQuery.getFrom().getId());
@@ -390,7 +392,7 @@ public class CallbackQueryHandler {
         return editMessageText;
     }
 
-    private BotApiMethod<?> statistics(CallbackQuery buttonQuery, String answer, UsersStatisticsController usersController) {
+    private BotApiMethod<?> statistics(CallbackQuery buttonQuery, String answer, UsersStatisticsController usersController, UsersRegistrationDataController usersRegistrationDataController) {
         UsersStatistics user = usersController.getUserByTelegramId(buttonQuery.getFrom().getId());
         return switch (answer) {
             case "День" ->
@@ -401,6 +403,10 @@ public class CallbackQueryHandler {
                     createEditMessageText(buttonQuery, Constants.getUserMonthlyIntakeMessage(user), new InlineKeyboardMarkup(), true);
             case "За все время" ->
                     createEditMessageText(buttonQuery, Constants.getUserAllTimeIntakeMessage(user), new InlineKeyboardMarkup(), true);
+            case "Отслеживание веса" -> {
+                double currentWeight = usersRegistrationDataController.getUserByTelegramId(buttonQuery.getFrom().getId()).getWeight();
+                yield createEditMessageText(buttonQuery, Constants.getUserWeightChange(user, currentWeight), new InlineKeyboardMarkup(), true);
+            }
             default ->
                     createEditMessageText(buttonQuery, Constants.getUserAllStatsMessage(user), new InlineKeyboardMarkup(), true);
         };

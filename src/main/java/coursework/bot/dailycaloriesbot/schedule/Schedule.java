@@ -49,7 +49,7 @@ public class Schedule {
 
     @Scheduled(cron = "0 0 12 * * *")
     private void weightTracking() {
-        Optional<List<Long>> usersData = usersStatisticsRepository.getAllTelegramIdByDaysInBot(1);
+        Optional<List<Long>> usersData = usersStatisticsRepository.getAllTelegramIdByDaysInBot(7);
         if (usersData.isPresent()) {
             List<Long> listOfTelegramId = usersData.get();
             for (Long id : listOfTelegramId) {

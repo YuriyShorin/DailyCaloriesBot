@@ -61,7 +61,7 @@ public class CommandsHandler {
         return new SendMessage(update.getMessage().getChatId().toString(), Constants.WHAT_IS_YOUR_WEIGHT_QUESTION);
     }
 
-    public BotApiMethod<?> weightCommandReceived(Update update, UsersRegistrationDataController usersController) {
+    public BotApiMethod<?> weightCommandReceived(Update update, UsersRegistrationDataController usersController, UsersStatisticsController usersStatisticsController) {
         String messageText = update.getMessage().getText();
         Double weight = NumbersUtil.parseDouble(messageText);
         if (weight == null) {
@@ -72,6 +72,7 @@ public class CommandsHandler {
             return new SendMessage(update.getMessage().getChatId().toString(), "Вы ввели некорректный вес: " + weight);
         }
         long userId = update.getMessage().getFrom().getId();
+        usersStatisticsController.updateStartWeight(userId, weight);
         usersController.updateWeight(userId, weight);
         usersController.updateWasRegistered(userId, "height");
         return new SendMessage(update.getMessage().getChatId().toString(), Constants.WHAT_IS_YOUR_HEIGHT_QUESTION);
@@ -351,13 +352,22 @@ public class CommandsHandler {
     }
 
     public BotApiMethod<?> getListOfProducts(Map<Long, List<String>> page, Update update) {
-        List<String> listOfNamesOfProducts = page.get(update.getMessage().getFrom().getId());
-        ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setText("Выберите продукт");
-        sendMessage.setChatId(update.getMessage().getChatId());
-        sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfNamesOfProducts, 1, true));
-        return sendMessage;
+        try {
+            List<String> listOfNamesOfProducts = page.get(update.getMessage().getFrom().getId());
+            ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setText("Выберите продукт");
+            sendMessage.setChatId(update.getMessage().getChatId());
+            sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfNamesOfProducts, 1, true));
+            return sendMessage;
+        } catch (NullPointerException e) {
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setText("Введите продукт");
+            ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
+            sendMessage.setChatId(update.getMessage().getChatId());
+            sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(Constants.FINAL_KEYBOARD,2,false));
+            return sendMessage;
+        }
     }
 
     protected static SendMessage fulfilUserPages(List<Products> listOfProducts, UsersRegistrationDataController usersController, long userId, long chatId, int grams) {

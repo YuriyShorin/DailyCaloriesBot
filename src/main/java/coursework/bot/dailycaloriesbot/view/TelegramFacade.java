@@ -76,7 +76,7 @@ public class TelegramFacade {
             case "/start" ->
                     commandsHandler.startCommandReceived(update, usersRegistrationDataController); // если получена команда /start
             case "age" -> commandsHandler.ageCommandReceived(update, usersRegistrationDataController);
-            case "weight" -> commandsHandler.weightCommandReceived(update, usersRegistrationDataController);
+            case "weight" -> commandsHandler.weightCommandReceived(update, usersRegistrationDataController, usersStatisticsController);
             case "height" -> commandsHandler.heightCommandReceived(update, usersRegistrationDataController);
             case "change_age" -> commandsHandler.changeAgeCommandReceived(update, usersRegistrationDataController);
             case "change_height" ->
