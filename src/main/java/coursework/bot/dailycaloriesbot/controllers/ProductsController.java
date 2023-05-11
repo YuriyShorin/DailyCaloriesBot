@@ -32,4 +32,3 @@ public class ProductsController {
         return productsRepository.findByProductLike(product);
     }
 }
-

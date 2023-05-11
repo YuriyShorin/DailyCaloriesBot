@@ -20,7 +20,6 @@ public class TelegramFacade {
     private final UsersStatisticsController usersStatisticsController;
     private final ProductsController productsController;
     private final UsersFavouritesController usersFavouritesController;
-
     private final UsersRecentController usersRecentController;
 
     @Autowired
@@ -33,17 +32,13 @@ public class TelegramFacade {
     }
 
     public BotApiMethod<?> handleUpdate(Update update, DailyCaloriesBot bot) { // получен update от Telegram
-//        if (update.hasCallbackQuery() || update.hasMessage()) {
-//            System.out.println(update);
-//            return null;
-//        }
         if (update.hasCallbackQuery()) {
             CallbackQueryHandler callbackQueryHandler = new CallbackQueryHandler();
             return callbackQueryHandler.processCallBackQuery(update.getCallbackQuery(), usersRegistrationDataController, usersStatisticsController, usersFavouritesController, usersRecentController, productsController, bot);
         }
         if (update.hasMessage() && update.getMessage().hasText()) { // если получено сообщение
             String messageText = update.getMessage().getText();
-            if (messageText.equals("/start")) { // получена команда начать
+            if (messageText.startsWith("/")) { // получена команда начать
                 return processCommand(update, messageText);
             }
             UsersRegistrationData user = usersRegistrationDataController.getUserByTelegramId(update.getMessage()
@@ -67,16 +62,18 @@ public class TelegramFacade {
         return null;
     }
 
-    private BotApiMethod<?> processCommand(Update update, String command) { // функция, обрабатывающая полученную команду
-        CommandsHandler commandsHandler = new CommandsHandler(); // обработчик команд
-        if (command.startsWith("/") && !command.equals("/start")) {
+    private BotApiMethod<?> processCommand(Update update, String command) {
+        CommandsHandler commandsHandler = new CommandsHandler();
+        if (command.startsWith("/") && !(command.equals("/start") || command.equals("/help") || command.equals("/delete"))) {
             return commandsHandler.unknownCommandReceived(update);
         }
         return switch (command) {
-            case "/start" ->
-                    commandsHandler.startCommandReceived(update, usersRegistrationDataController); // если получена команда /start
+            case "/start" -> commandsHandler.startCommandReceived(update, usersRegistrationDataController);
+            case "/help", "❓Помощь" -> commandsHandler.getHelpCommandReceived(update);
+            case "/delete" -> commandsHandler.deleteCommandReceived(update, usersRegistrationDataController);
             case "age" -> commandsHandler.ageCommandReceived(update, usersRegistrationDataController);
-            case "weight" -> commandsHandler.weightCommandReceived(update, usersRegistrationDataController, usersStatisticsController);
+            case "weight" ->
+                    commandsHandler.weightCommandReceived(update, usersRegistrationDataController, usersStatisticsController);
             case "height" -> commandsHandler.heightCommandReceived(update, usersRegistrationDataController);
             case "change_age" -> commandsHandler.changeAgeCommandReceived(update, usersRegistrationDataController);
             case "change_height" ->
@@ -91,7 +88,6 @@ public class TelegramFacade {
             case "\uD83D\uDCCA Статистика" -> commandsHandler.getStatisticsCommandReceived(update);
             case "⚙️ Изменить данные" ->
                     commandsHandler.changeDataCommandReceived(update, usersRegistrationDataController);
-            case "❓Помощь" -> commandsHandler.getHelpCommandReceived(update);
             case "\uD83C\uDF71 Моя норма" ->
                     commandsHandler.getNormCommandReceived(update, usersRegistrationDataController);
             case "Выбрать другой продукт" -> commandsHandler.findAnotherProductCommandReceived(update);

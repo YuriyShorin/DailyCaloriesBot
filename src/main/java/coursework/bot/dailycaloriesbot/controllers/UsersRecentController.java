@@ -29,12 +29,7 @@ public class UsersRecentController {
         usersRecentRepository.save(new UsersRecent(usersRecent.getTelegramId()));
     }
 
-    public List<Recent> getRecent(long telegramId) {
-        Optional<UsersRecent> userData = usersRecentRepository.findById(telegramId);
-        return userData.map(UsersRecent::getRecentList).orElse(null);
-    }
-
-    public boolean addRecent(long telegramId, String product) {
+    public void addRecent(long telegramId, String product) {
         Optional<UsersRecent> userData = usersRecentRepository.findById(telegramId);
         UsersRecent usersRecent;
         if (userData.isEmpty()) {
@@ -54,7 +49,6 @@ public class UsersRecentController {
             recentList.add(new Recent(telegramId, product));
         }
         usersRecentRepository.save(usersRecent);
-        return true;
     }
 
     public void deleteRecent(long telegramId, String product) {
@@ -68,9 +62,5 @@ public class UsersRecentController {
         Optional<Recent> recent = recentRepository.findByTelegramIdAndProduct(telegramId, product);
         recent.ifPresent(value -> recentRepository.deleteById(value.getId()));
         usersRecentRepository.save(usersRecent);
-    }
-
-    public void deleteUserRecent(long telegramId) {
-        usersRecentRepository.deleteById(telegramId);
     }
 }

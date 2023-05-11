@@ -16,10 +16,8 @@ public class Recent {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
-
     @Column(name = "telegram_id")
     private Long telegramId;
-
     @Column(name = "product")
     private String product;
 

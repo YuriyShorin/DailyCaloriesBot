@@ -1,20 +1,12 @@
 package coursework.bot.dailycaloriesbot.controllers;
 
-import coursework.bot.dailycaloriesbot.constants.Constants;
 import coursework.bot.dailycaloriesbot.entities.Products;
 import coursework.bot.dailycaloriesbot.entities.UsersRegistrationData;
 import coursework.bot.dailycaloriesbot.entities.UsersStatistics;
-import coursework.bot.dailycaloriesbot.repositories.UsersRegistrationDataRepository;
 import coursework.bot.dailycaloriesbot.repositories.UsersStatisticsRepository;
-import coursework.bot.dailycaloriesbot.view.keyboards.InlineKeyboardModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
-import org.telegram.telegrambots.meta.api.methods.ParseMode;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -34,6 +26,10 @@ public class UsersStatisticsController {
     public UsersStatistics getUserByTelegramId(long telegramId) {
         Optional<UsersStatistics> usersData = usersStatisticsRepository.findById(telegramId);
         return usersData.orElse(null);
+    }
+
+    public UsersRegistrationData getUserRegistrationDataByTelegramId(long id) {
+        return userController.getUserByTelegramId(id);
     }
 
     public void zeroDailyGlassesOfWaterAndDailyIntakeForAllUsers() {
@@ -132,16 +128,5 @@ public class UsersStatisticsController {
             user.setStartWeight(weight);
             usersStatisticsRepository.save(user);
         }
-    }
-
-    public SendMessage weightTracking(Long id) {
-        SendMessage sendMessage = new SendMessage();
-        InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
-        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.NO_OR_CHANGE_BUTTONS_WEIGHT_TRACKING, "WEIGHT_TRACKING"));
-        UsersRegistrationData user = userController.getUserByTelegramId(id);
-        sendMessage.setText("Пришло время повторно измерить свой вес.\n\n" + Constants.getWeightDataMessage(user));
-        sendMessage.setChatId(id);
-        sendMessage.setParseMode(ParseMode.HTML);
-        return sendMessage;
     }
 }

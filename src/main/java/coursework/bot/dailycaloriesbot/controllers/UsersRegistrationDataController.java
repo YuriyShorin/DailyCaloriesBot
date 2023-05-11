@@ -107,6 +107,8 @@ public class UsersRegistrationDataController {
     }
 
     public void deleteUser(long telegramId) {
+        usersRecentRepository.deleteById(telegramId);
+        usersFavouritesRepository.deleteById(telegramId);
         usersStatisticsRepository.deleteById(telegramId);
         usersRegistrationDataRepository.deleteById(telegramId);
     }

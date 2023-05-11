@@ -25,6 +25,8 @@ public class Constants {
             Регистрация позволит расчитать норму дневного потребления.
                              
             <b>Важно: Мы не храним персональные данные. Бот имеет доступ лишь к Telegram id.</b>
+                        
+            Для получения более подробной информации используйте команду <b>/help</b>
 
             Желаете зарегистрироваться?""";
     public static String WHAT_IS_YOUR_GENDER_QUESTION = "Какого вы пола?";
@@ -46,7 +48,6 @@ public class Constants {
             <b>Экстремальная</b> - занятия спортом с почти ежедневным графиком и несколькими тренировками в течение дня или очень трудоемкая работа.""";
     public static final List<String> YES_OR_NO_BUTTONS = List.of(new String[]{"Да ✅", "Нет ❌"});
     public static final List<String> YES_OR_CHANGE_BUTTONS = List.of(new String[]{"Да ✅", "Изменить ⚙️"});
-
     public static final List<String> NO_OR_CHANGE_BUTTONS_WEIGHT_TRACKING = List.of(new String[]{"Изменить ⚙️", "Оставить ✅"});
     public static final List<String> SAVE_OR_CHANGE_BUTTONS = List.of(new String[]{"Сохранить ✅", "Изменить ⚙️"});
     public static final List<String> GENDER_BUTTONS = List.of(new String[]{"Мужчина \uD83D\uDC71\u200D♂️", "Женщина \uD83D\uDC71\u200D♀️"});
@@ -58,12 +59,11 @@ public class Constants {
     public static final List<String> STATS_BUTTONS = List.of(new String[]{"День", "Неделя", "Месяц", "За все время", "Вся статистика", "Отслеживание веса"});
     public static final List<String> FINAL_KEYBOARD = List.of(new String[]{"\uD83C\uDF54 Добавить продукт",
             "\uD83D\uDCA7 Добавить стакан", " \uD83D\uDCCA Статистика", "⚙️ Изменить данные", "❓Помощь", "\uD83C\uDF71 Моя норма"});
-    public static List<String> ADD_PRODUCT_BUTTON = List.of(new String[]{"Избранное ⭐️", "Недавние \uD83D\uDDD3️", "Отменить ❌"});
+    public static List<String> ADD_PRODUCT_BUTTONS = List.of(new String[]{"Избранное ⭐️", "Недавние \uD83D\uDDD3️", "Отменить ❌"});
     public static final List<String> ADD_PRODUCT_WITH_ADD_TO_FAVOURITES_BUTTONS = List.of(new String[]{"Добавить ✅",
             "Еще товары \uD83C\uDF55", "В избранное ⭐️", "Изменить граммовку", "Не добавлять ❌"});
     public static final List<String> ADD_PRODUCT_WITH_DELETE_FROM_FAVOURITES_BUTTONS = List.of(new String[]{"Добавить ✅",
             "Еще товары \uD83C\uDF55", "Удалить из избранного", "Изменить граммовку", "Не добавлять ❌"});
-
 
     public static String getIsAllRightMessage(UsersRegistrationData user) {
         return "Ваши данные изменены." +
@@ -182,6 +182,40 @@ public class Constants {
 
     public static String getUserWeightChange(UsersStatistics user, double currentWeight) {
         double startWeight = user.getStartWeight();
-        return "Сначала использования данного бота ваш вес изменился с <b>" + startWeight + "</b> (кг) до <b>" + currentWeight +"</b> (кг)";
+        return "Сначала использования данного бота ваш вес изменился с <b>" + startWeight + "</b> (кг) до <b>" + currentWeight + "</b> (кг)";
+    }
+
+    public static String getHelpMessage() {
+        return """
+                Приветствуем вас в <b>@CalorieTrackingBot</b>, созданном для удобного подсчета калорий и рекомендаций основанных на параметрах веса, возраста, роста, пола, активности и цели использования нашего продукта.
+
+                <b>Важно: мы не храним персональные данные пользователей, за исключением данных, добровольно нам предоставленных.</b>
+                                
+                <b>Далее будут описаны функции, доступные в @CalorieTrackingBot:</b>
+
+                <b>Получение информации о продукте:</b>
+                                
+                Для получения информации о продукте и включения его в дневной рацион, введите его название и выберете продукт из представленного списка.
+
+                <b>\uD83C\uDF54 Добавить продукт</b>
+                    
+                Позволяет выбрать уже использованные продукты из <b>Избранных</b> или <b>Недавних</b>.
+
+                <b>\uD83D\uDCA7 Добавить стакан</b>
+                    
+                Позволяет вести статистику выпитых за день стаканов воды.
+
+                <b>\uD83D\uDCCA Статистика</b>
+                                
+                Дает возможность изучить статистику по потребленным калориям, выпитым стаканам воды и изменениям веса.
+
+                <b>⚙️ Изменить данные</b>
+                                
+                Используется для изменения данных, указанных при регистрации или их дополнения.
+
+                <b>\uD83C\uDF71 Моя норма</b>
+                                
+                Предоставляет возможность узнать свою норму дневного потребления, рассчитанную с помощью формулы <b>Миффлина — Сан-Жеора</b>.
+                """;
     }
 }

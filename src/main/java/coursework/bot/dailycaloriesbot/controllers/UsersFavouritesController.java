@@ -61,8 +61,4 @@ public class UsersFavouritesController {
         favourite.ifPresent(value -> favouritesRepository.deleteById(value.getId()));
         usersFavouritesRepository.save(usersFavourites);
     }
-
-    public void deleteUserFavourites(long telegramId) {
-        usersFavouritesRepository.deleteById(telegramId);
-    }
 }

@@ -143,8 +143,8 @@ public class CommandsHandler {
         usersController.updateWasRegistered(userId, "yes");
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(update.getMessage().getChatId());
-        sendMessage.setText("Ваш вес изменился с " + oldWeight + "(кг) до " + weight +"(кг)");
-        sendMessage.setReplyMarkup(new ReplyKeyboardModel().getReplyKeyboardMarkup(Constants.FINAL_KEYBOARD,2, false));
+        sendMessage.setText("Ваш вес изменился с " + oldWeight + "(кг) до " + weight + "(кг)");
+        sendMessage.setReplyMarkup(new ReplyKeyboardModel().getReplyKeyboardMarkup(Constants.FINAL_KEYBOARD, 2, false));
         return sendMessage;
     }
 
@@ -166,7 +166,7 @@ public class CommandsHandler {
     public BotApiMethod<?> addProductCommandReceived(Update update) {
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
         SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Выберите:");
-        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_PRODUCT_BUTTON, "ADD_PRODUCT"));
+        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.ADD_PRODUCT_BUTTONS, "ADD_PRODUCT"));
         return sendMessage;
     }
 
@@ -197,7 +197,9 @@ public class CommandsHandler {
     }
 
     public BotApiMethod<?> getHelpCommandReceived(Update update) {
-        return new SendMessage(update.getMessage().getChatId().toString(), "getHelpCommandReceived");
+        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), Constants.getHelpMessage());
+        sendMessage.setParseMode(ParseMode.HTML);
+        return sendMessage;
     }
 
     public BotApiMethod<?> getNormCommandReceived(Update update, UsersRegistrationDataController usersController) {
@@ -316,6 +318,16 @@ public class CommandsHandler {
         return null;
     }
 
+    public BotApiMethod<?> deleteCommandReceived(Update update, UsersRegistrationDataController usersRegistrationDataController) {
+        if (usersRegistrationDataController.getUserByTelegramId(update.getMessage().getFrom().getId()) == null) {
+            return new SendMessage(update.getMessage().getFrom().getId().toString(), "У вас нет акаунта");
+        }
+        SendMessage sendMessage = new SendMessage(update.getMessage().getChatId().toString(), "Вы точно хотите удалить свой аккаунт?");
+        InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
+        sendMessage.setReplyMarkup(inlineKeyboardModel.createInlineKeyboardMarkup(Constants.YES_OR_NO_BUTTONS, "DELETE"));
+        return sendMessage;
+    }
+
     private BotApiMethod<?> createFinalRegistrationMessage(long userId, UsersRegistrationDataController usersController) {
         usersController.updateWasRegistered(userId, "yes");
         UsersRegistrationData user = usersController.getUserByTelegramId(userId);
@@ -365,7 +377,7 @@ public class CommandsHandler {
             sendMessage.setText("Введите продукт");
             ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
             sendMessage.setChatId(update.getMessage().getChatId());
-            sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(Constants.FINAL_KEYBOARD,2,false));
+            sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(Constants.FINAL_KEYBOARD, 2, false));
             return sendMessage;
         }
     }

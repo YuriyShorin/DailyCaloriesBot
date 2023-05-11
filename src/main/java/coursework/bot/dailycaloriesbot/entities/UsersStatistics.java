@@ -57,9 +57,9 @@ public class UsersStatistics {
     private double allTimeCarbohydratesIntake;
     @Column(name = "days_in_bot")
     private int daysInBot;
-
     @Column(name = "start_weight")
     private double startWeight;
+
     protected UsersStatistics() {
     }
 

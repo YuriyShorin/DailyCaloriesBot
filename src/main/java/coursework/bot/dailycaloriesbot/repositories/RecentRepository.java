@@ -7,5 +7,4 @@ import java.util.Optional;
 
 public interface RecentRepository extends CrudRepository<Recent, Long> {
     Optional<Recent> findByTelegramIdAndProduct(Long telegram, String product);
-
 }

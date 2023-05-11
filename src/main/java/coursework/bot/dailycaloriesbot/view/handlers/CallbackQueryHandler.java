@@ -41,13 +41,15 @@ public class CallbackQueryHandler {
         } else if (data.startsWith("change_ACTIVITY")) {
             return changeActivity(buttonQuery, data.substring(15), usersController);
         } else if (data.startsWith("WAS_REGISTRATION_CONTINUED")) {
-            return continueRegistration(buttonQuery, data.substring(26), usersController, usersStatisticsController);
+            return continueRegistration(buttonQuery, data.substring(26), usersController);
         } else if (data.startsWith("ADD_PRODUCT")) {
             return addProduct(buttonQuery, data.substring(11), usersFavouritesController, usersRecentController, bot);
         } else if (data.startsWith("PRODUCT_INFO")) {
             return productInfo(buttonQuery, data.substring(12), usersController, usersStatisticsController, usersFavouritesController, usersRecentController, productsController, bot);
         } else if (data.startsWith("STATS")) {
             return statistics(buttonQuery, data.substring(5), usersStatisticsController, usersController);
+        } else if (data.startsWith("DELETE")) {
+            return deleteAccount(buttonQuery, data.substring(6), usersController, bot);
         } else if (data.startsWith("WEIGHT_TRACKING")) {
             return weightTracking(buttonQuery, data.substring(15), usersController, bot);
         } else {
@@ -116,7 +118,6 @@ public class CallbackQueryHandler {
         } else {
             editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Данные сохранены!", new InlineKeyboardMarkup(), false);
             sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, "Вам доступен основной функционал бота", false));
-
         }
         return editMessageText;
     }
@@ -183,7 +184,7 @@ public class CallbackQueryHandler {
         return createFinalRegistrationMessage(buttonQuery, usersController);
     }
 
-    private BotApiMethod<?> continueRegistration(CallbackQuery buttonQuery, String answer, UsersRegistrationDataController usersController, UsersStatisticsController usersStatisticsController) {
+    private BotApiMethod<?> continueRegistration(CallbackQuery buttonQuery, String answer, UsersRegistrationDataController usersController) {
         EditMessageText editMessageText;
         String stageOfRegistration = usersController.getUserByTelegramId(buttonQuery.getFrom().getId())
                 .getWasRegistered();
@@ -282,112 +283,119 @@ public class CallbackQueryHandler {
         int grams = Integer.parseInt(metadataArray[1]);
         String answer = metadataArray[2];
         Products product = productsController.getProductById(productId);
-        if (answer.equals(Constants.ADD)) {
-            if (grams == 100) {
-                usersRecentController.addRecent(buttonQuery.getFrom().getId(), product.getProduct());
-            } else {
-                usersRecentController.addRecent(buttonQuery.getFrom().getId(), product.getProduct() + ", " + grams);
-            }
-            usersStatisticsController.increaseIntake(buttonQuery.getFrom().getId(), product, grams);
-            usersController.removeUsersPreviousPage(buttonQuery.getFrom().getId());
-            usersController.removeUsersNextPage(buttonQuery.getFrom().getId());
-            usersController.removeUsersLastProduct(buttonQuery.getFrom().getId());
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.getUserDailyIntakeMessage(usersStatisticsController.getUserByTelegramId(buttonQuery.getFrom()
-                            .getId())),
-                    new InlineKeyboardMarkup(), true);
-            sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, "Продукт был добавлен", false));
-        } else if (answer.equals(Constants.MORE)) {
-            List<Products> listOfProducts;
-            if (usersController.getUsersLastProduct(buttonQuery.getFrom().getId()) == null) {
-                listOfProducts = productsController.getProductsByName("%" + product.getProduct()
-                        .toLowerCase() + "%");
-                usersController.putUsersLastProduct(buttonQuery.getFrom().getId(), product.getProduct());
-            } else {
-                listOfProducts = productsController.getProductsByName("%" + usersController.getUsersLastProduct(buttonQuery.getFrom()
-                                .getId())
-                        .toLowerCase() + "%");
-            }
-            if (listOfProducts.isEmpty()) {
-                return new SendMessage(buttonQuery.getMessage().getChatId().toString(), "Товары не найдены");
-            } else if (listOfProducts.size() >= 100) {
-                sendMessage(bot, CommandsHandler.fulfilUserPages(listOfProducts, usersController, buttonQuery.getFrom()
-                        .getId(), buttonQuery.getMessage().getChatId(), grams));
-            } else {
-                List<String> listOfNamesOfProducts = new ArrayList<>();
-                for (Products listOfProduct : listOfProducts) {
-                    String name = listOfProduct.getProduct();
-                    listOfNamesOfProducts.add(name);
+        switch (answer) {
+            case Constants.ADD -> {
+                if (grams == 100) {
+                    usersRecentController.addRecent(buttonQuery.getFrom().getId(), product.getProduct());
+                } else {
+                    usersRecentController.addRecent(buttonQuery.getFrom().getId(), product.getProduct() + ", " + grams);
                 }
-                listOfNamesOfProducts.add("Выбрать другой продукт");
-                ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
-                SendMessage sendMessage = new SendMessage();
-                sendMessage.setText("Выберите продукт");
-                sendMessage.setChatId(buttonQuery.getMessage().getChatId());
-                sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfNamesOfProducts, 1, true));
-                sendMessage(bot, sendMessage);
-            }
-            if (usersController.getUsersLastProduct(buttonQuery.getFrom().getId()) == null) {
-                editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Будут показаны продукты, содержащие: <b>" + product.getProduct() + ".</b>",
+                usersStatisticsController.increaseIntake(buttonQuery.getFrom().getId(), product, grams);
+                usersController.removeUsersPreviousPage(buttonQuery.getFrom().getId());
+                usersController.removeUsersNextPage(buttonQuery.getFrom().getId());
+                usersController.removeUsersLastProduct(buttonQuery.getFrom().getId());
+                editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.getUserDailyIntakeMessage(usersStatisticsController.getUserByTelegramId(buttonQuery.getFrom()
+                                .getId())),
                         new InlineKeyboardMarkup(), true);
-            } else {
-                editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Будут показаны продукты, содержащие: <b>" + usersController.getUsersLastProduct(buttonQuery.getFrom()
-                                .getId()) + ".</b>",
-                        new InlineKeyboardMarkup(), true);
+                sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, "Продукт был добавлен", false));
             }
-        } else if (answer.equals(Constants.ADD_TO_FAVOURITES)) {
-            usersController.removeUsersPreviousPage(buttonQuery.getFrom().getId());
-            usersController.removeUsersNextPage(buttonQuery.getFrom().getId());
-            usersController.removeUsersLastProduct(buttonQuery.getFrom().getId());
-            if (grams == 100) {
-                if (usersFavouritesController.addFavourite(buttonQuery.getFrom().getId(), product.getProduct())) {
+            case Constants.MORE -> {
+                List<Products> listOfProducts;
+                if (usersController.getUsersLastProduct(buttonQuery.getFrom().getId()) == null) {
+                    listOfProducts = productsController.getProductsByName("%" + product.getProduct()
+                            .toLowerCase() + "%");
+                    usersController.putUsersLastProduct(buttonQuery.getFrom().getId(), product.getProduct());
+                } else {
+                    listOfProducts = productsController.getProductsByName("%" + usersController.getUsersLastProduct(buttonQuery.getFrom()
+                                    .getId())
+                            .toLowerCase() + "%");
+                }
+                if (listOfProducts.isEmpty()) {
+                    return new SendMessage(buttonQuery.getMessage().getChatId().toString(), "Товары не найдены");
+                } else if (listOfProducts.size() >= 100) {
+                    sendMessage(bot, CommandsHandler.fulfilUserPages(listOfProducts, usersController, buttonQuery.getFrom()
+                            .getId(), buttonQuery.getMessage().getChatId(), grams));
+                } else {
+                    List<String> listOfNamesOfProducts = new ArrayList<>();
+                    for (Products listOfProduct : listOfProducts) {
+                        String name = listOfProduct.getProduct();
+                        listOfNamesOfProducts.add(name);
+                    }
+                    listOfNamesOfProducts.add("Выбрать другой продукт");
+                    ReplyKeyboardModel replyKeyboardModel = new ReplyKeyboardModel();
+                    SendMessage sendMessage = new SendMessage();
+                    sendMessage.setText("Выберите продукт");
+                    sendMessage.setChatId(buttonQuery.getMessage().getChatId());
+                    sendMessage.setReplyMarkup(replyKeyboardModel.getReplyKeyboardMarkup(listOfNamesOfProducts, 1, true));
+                    sendMessage(bot, sendMessage);
+                }
+                if (usersController.getUsersLastProduct(buttonQuery.getFrom().getId()) == null) {
+                    editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Будут показаны продукты, содержащие: <b>" + product.getProduct() + ".</b>",
+                            new InlineKeyboardMarkup(), true);
+                } else {
+                    editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Будут показаны продукты, содержащие: <b>" + usersController.getUsersLastProduct(buttonQuery.getFrom()
+                                    .getId()) + ".</b>",
+                            new InlineKeyboardMarkup(), true);
+                }
+            }
+            case Constants.ADD_TO_FAVOURITES -> {
+                usersController.removeUsersPreviousPage(buttonQuery.getFrom().getId());
+                usersController.removeUsersNextPage(buttonQuery.getFrom().getId());
+                usersController.removeUsersLastProduct(buttonQuery.getFrom().getId());
+                if (grams == 100) {
+                    if (usersFavouritesController.addFavourite(buttonQuery.getFrom().getId(), product.getProduct())) {
+                        editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Продукт был добавлен в избранное",
+                                new InlineKeyboardMarkup(), false);
+                    } else {
+                        editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Продукт не был добавлен в избранное",
+                                new InlineKeyboardMarkup(), false);
+                    }
+                } else if (usersFavouritesController.addFavourite(buttonQuery.getFrom()
+                        .getId(), product.getProduct() + ", " + grams)) {
                     editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Продукт был добавлен в избранное",
                             new InlineKeyboardMarkup(), false);
                 } else {
                     editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Продукт не был добавлен в избранное",
                             new InlineKeyboardMarkup(), false);
                 }
-            } else if (usersFavouritesController.addFavourite(buttonQuery.getFrom()
-                    .getId(), product.getProduct() + ", " + grams)) {
-                editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Продукт был добавлен в избранное",
-                        new InlineKeyboardMarkup(), false);
-            } else {
-                editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Продукт не был добавлен в избранное",
-                        new InlineKeyboardMarkup(), false);
+                sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, Constants.getNumberOfProductsInFavouritesMessage(usersFavouritesController.getUserFavouritesByTelegramId(buttonQuery.getFrom()
+                        .getId())), true));
             }
-            sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, Constants.getNumberOfProductsInFavouritesMessage(usersFavouritesController.getUserFavouritesByTelegramId(buttonQuery.getFrom()
-                    .getId())), true));
-        } else if (answer.equals(Constants.DELETE_FROM_FAVOURITES)) {
-            usersController.removeUsersPreviousPage(buttonQuery.getFrom().getId());
-            usersController.removeUsersNextPage(buttonQuery.getFrom().getId());
-            usersController.removeUsersLastProduct(buttonQuery.getFrom().getId());
-            usersFavouritesController.deleteFavourite(buttonQuery.getFrom().getId(), product.getProduct());
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Продукт был удален из избранного",
-                    new InlineKeyboardMarkup(), true);
-            sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, Constants.getNumberOfProductsInFavouritesMessage(usersFavouritesController.getUserFavouritesByTelegramId(buttonQuery.getFrom()
-                    .getId())), true));
-        } else if (answer.equals(Constants.CHANGE_GRAMS)) {
-            SendMessage sendMessage = new SendMessage(buttonQuery.getMessage().getChatId()
-                    .toString(), product.getProduct());
-            ForceReplyKeyboard forceReplyKeyboard = new ForceReplyKeyboard();
-            if (product.getProduct().length() > 49) {
-                forceReplyKeyboard.setInputFieldPlaceholder("Яблоко, (число грамм)");
-            } else {
-                forceReplyKeyboard.setInputFieldPlaceholder(product.getProduct() + ", (число грамм)");
+            case Constants.DELETE_FROM_FAVOURITES -> {
+                usersController.removeUsersPreviousPage(buttonQuery.getFrom().getId());
+                usersController.removeUsersNextPage(buttonQuery.getFrom().getId());
+                usersController.removeUsersLastProduct(buttonQuery.getFrom().getId());
+                usersFavouritesController.deleteFavourite(buttonQuery.getFrom().getId(), product.getProduct());
+                editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Продукт был удален из избранного",
+                        new InlineKeyboardMarkup(), true);
+                sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, Constants.getNumberOfProductsInFavouritesMessage(usersFavouritesController.getUserFavouritesByTelegramId(buttonQuery.getFrom()
+                        .getId())), true));
+            }
+            case Constants.CHANGE_GRAMS -> {
+                SendMessage sendMessage = new SendMessage(buttonQuery.getMessage().getChatId()
+                        .toString(), product.getProduct());
+                ForceReplyKeyboard forceReplyKeyboard = new ForceReplyKeyboard();
+                if (product.getProduct().length() > 49) {
+                    forceReplyKeyboard.setInputFieldPlaceholder("Яблоко, (число грамм)");
+                } else {
+                    forceReplyKeyboard.setInputFieldPlaceholder(product.getProduct() + ", (число грамм)");
 
+                }
+                sendMessage.setReplyMarkup(forceReplyKeyboard);
+                sendMessage(bot, sendMessage);
+                sendMessage(bot, new SendMessage(buttonQuery.getMessage().getChatId()
+                        .toString(), "Вставьте продукт с нужным количеством грамм.\nНапример:\n" + product.getProduct() + ", (число грамм)"));
+                editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Вы хотите изменить граммовку данного продукта:", new InlineKeyboardMarkup(), false);
             }
-            sendMessage.setReplyMarkup(forceReplyKeyboard);
-            sendMessage(bot, sendMessage);
-            sendMessage(bot, new SendMessage(buttonQuery.getMessage().getChatId()
-                    .toString(), "Вставьте продукт с нужным количеством грамм.\nНапример:\n" + product.getProduct() + ", (число грамм)"));
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, "Вы хотите изменить граммовку данного продукта:", new InlineKeyboardMarkup(), false);
-        } else {
-            usersController.removeUsersPreviousPage(buttonQuery.getFrom().getId());
-            usersController.removeUsersNextPage(buttonQuery.getFrom().getId());
-            usersController.removeUsersLastProduct(buttonQuery.getFrom().getId());
-            editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.getProductAddedMessage(product, grams / 100.0),
-                    new InlineKeyboardMarkup(), true);
-            sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, Constants.getProductWontBeCountedMessage(usersStatisticsController.getUserByTelegramId(buttonQuery.getFrom()
-                    .getId())), true));
+            default -> {
+                usersController.removeUsersPreviousPage(buttonQuery.getFrom().getId());
+                usersController.removeUsersNextPage(buttonQuery.getFrom().getId());
+                usersController.removeUsersLastProduct(buttonQuery.getFrom().getId());
+                editMessageText = (EditMessageText) createEditMessageText(buttonQuery, Constants.getProductAddedMessage(product, grams / 100.0),
+                        new InlineKeyboardMarkup(), true);
+                sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, Constants.getProductWontBeCountedMessage(usersStatisticsController.getUserByTelegramId(buttonQuery.getFrom()
+                        .getId())), true));
+            }
         }
         return editMessageText;
     }
@@ -417,6 +425,16 @@ public class CallbackQueryHandler {
         InlineKeyboardModel inlineKeyboardModel = new InlineKeyboardModel(new InlineKeyboardMarkup());
         return createEditMessageText(buttonQuery, Constants.getIsAllRightMessage(user),
                 inlineKeyboardModel.createInlineKeyboardMarkup(Constants.YES_OR_CHANGE_BUTTONS, "IS_REGISTRATION_CORRECT"), true);
+    }
+
+    private BotApiMethod<?> deleteAccount(CallbackQuery buttonQuery, String answer, UsersRegistrationDataController usersController, DailyCaloriesBot bot) {
+        if (answer.equals(Constants.YES)) {
+            usersController.deleteUser(buttonQuery.getFrom().getId());
+            return createEditMessageText(buttonQuery, "Аккаунт успешно удален", new InlineKeyboardMarkup(), false);
+        } else {
+            sendMessage(bot, (SendMessage) createFinalKeyboard(buttonQuery, "Спасибо, что остаетесь с нами!", false));
+            return createEditMessageText(buttonQuery, "Аккаунт не будет удален", new InlineKeyboardMarkup(), false);
+        }
     }
 
     private BotApiMethod<?> createEditMessageText(CallbackQuery buttonQuery, String text, InlineKeyboardMarkup inlineKeyboardMarkup, boolean isParseMode) {

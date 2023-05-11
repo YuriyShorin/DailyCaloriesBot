@@ -4,4 +4,5 @@ import coursework.bot.dailycaloriesbot.entities.UsersFavourites;
 
 import org.springframework.data.repository.CrudRepository;
 
-public interface UsersFavouritesRepository extends CrudRepository<UsersFavourites, Long> { }
+public interface UsersFavouritesRepository extends CrudRepository<UsersFavourites, Long> {
+}
