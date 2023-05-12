@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  postgres:
+    image: 'postgres:15.0'
+    volumes:
+      - 'postgres_db:/var/lib/postgresql/data'
+    container_name: 'java-postgres'
+    environment:
+      - 'POSTGRES_USER=postgres'
+      - 'POSTGRES_PASSWORD=11102003'
+      - 'POSTGRES_DB=DailyCaloriesBotDB'
+    restart: on-failure
+
+  app:
+    build: ./
+    container_name: 'java-app'
+    restart: always
+    ports:
+      - '80:80'
+
+volumes:
+  postgres_db:
